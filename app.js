@@ -25,6 +25,21 @@ mongoose.connect(process.env.MONGODB_URI, {
   useUnifiedTopology: true
 });
 
+app.use((req, res, next) => {
+  return res.status(404).json({
+    message: "Route not found"
+  });
+});
+
+app.use((error, req, res, next) => {
+  if (!error.statusCode) error.statusCode = 500;
+  if (!error.message) error.message = "An error occurred";
+
+  return res.status(Number(error.statusCode)).json({
+    message: error.message
+  });
+});
+
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", function() {
