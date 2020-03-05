@@ -6,6 +6,8 @@ require("dotenv").config();
 
 const app = express();
 
+const authRoutes = require("./routes/auth");
+
 app.use(bodyParser.json());
 
 const corsOptions = {
@@ -24,6 +26,8 @@ mongoose.connect(process.env.MONGODB_URI, {
   useCreateIndex: true,
   useUnifiedTopology: true
 });
+
+app.use("/auth", authRoutes);
 
 app.use((req, res, next) => {
   return res.status(404).json({
