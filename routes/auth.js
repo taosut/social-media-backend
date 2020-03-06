@@ -9,7 +9,7 @@ const s3Upload = require("../services/aws/s3").uploadImage;
 
 const router = express.Router();
 
-// POST => /auth/sign-up ** VALIDATE THIS **
+// POST => /auth/sign-up
 router.post(
   "/sign-up",
   s3Upload.single("profileImage"),
@@ -50,5 +50,6 @@ router.post(
 );
 
 // POST => /auth/sign-in ** VALIDATE THIS **
+router.post("/sign-in", authControllers.signIn);
 
 module.exports = router;

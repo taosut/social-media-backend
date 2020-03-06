@@ -26,7 +26,7 @@ exports.signUp = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    let user = new User({
+    let newUser = new User({
       username,
       email,
       description,
@@ -37,7 +37,7 @@ exports.signUp = async (req, res, next) => {
       password: hashedPassword
     });
 
-    await user.save();
+    await newUser.save();
 
     return res.status(200).json({ message: "User successfully created" });
   } catch (err) {
@@ -50,4 +50,41 @@ exports.signUp = async (req, res, next) => {
     if (!err.statusCode) err.statusCode = 500;
     next(err);
   }
+};
+
+exports.signIn = async (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  try {
+    const loggedUser = await User.findOne({ email: email });
+
+    if (!loggedUser) {
+      return res.status(401).json({ message: "Invalid Email/Password" });
+    }
+
+    const passwordMatched = await bcrypt.compare(password, loggedUser.password);
+
+    if (!passwordMatched) {
+      return res.status(401).json({ message: "Invalid Email/Password" });
+    }
+
+    const token = jwt.sign(
+      {
+        _id: loggedUser._id,
+        email: loggedUser.email,
+        username: loggedUser.username
+      },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "1h"
+      }
+    );
+
+    res.status(200).json({
+      message: "User successfully logged in",
+      token: token,
+      tokenExpiration: jwt.verify(token, process.env.JWT_SECRET_KEY).exp
+    });
+  } catch (err) {}
 };
