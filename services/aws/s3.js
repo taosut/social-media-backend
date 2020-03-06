@@ -33,13 +33,23 @@ const upload = multer({
     contentType: multerS3.AUTO_CONTENT_TYPE,
     metadata: function(req, file, cb) {
       cb(null, {
-        fieldName: req.fieldName,
-        username: req.body.username,
-        email: req.body.email
+        fieldName: req.fieldName
       });
     },
     key: function(req, file, cb) {
-      req.fieldName = uuidv4() + "." + file.mimetype.split("/")[1];
+      let folder;
+      switch (req.route.path) {
+        case "/sign-up":
+          folder = "profile-images/";
+          break;
+        case "/create-post":
+          folder = "post-images/";
+          break;
+        default:
+          folder = "";
+          break;
+      }
+      req.fieldName = folder + uuidv4() + "." + file.mimetype.split("/")[1];
       cb(null, req.fieldName);
     }
   }),

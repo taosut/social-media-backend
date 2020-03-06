@@ -49,7 +49,7 @@ router.post(
   authControllers.signUp
 );
 
-// POST => /auth/sign-in ** VALIDATE THIS **
+// POST => /auth/sign-in
 router.post("/sign-in", authControllers.signIn);
 
 module.exports = router;
