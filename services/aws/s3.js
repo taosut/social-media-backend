@@ -24,7 +24,7 @@ const fileLimits = {
   fileSize: 1048576
 };
 
-module.exports = multer({
+const upload = multer({
   storage: multerS3({
     s3: s3,
     bucket: process.env.AWS_BUCKET_NAME,
@@ -46,3 +46,19 @@ module.exports = multer({
   fileFilter: fileFilter,
   limits: fileLimits
 });
+
+const deleteObject = function(bucketName, objectKey) {
+  const params = {
+    Bucket: bucketName,
+    Key: objectKey
+  };
+
+  s3.deleteObject(params, function(error, data) {
+    if (error) console.log(err, err.stack);
+  });
+};
+
+module.exports = {
+  uploadImage: upload,
+  deleteObject: deleteObject
+};

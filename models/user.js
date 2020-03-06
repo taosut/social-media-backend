@@ -18,8 +18,16 @@ const userSchema = new Schema(
       required: true
     },
     profileImage: {
-      type: String,
-      required: true
+      type: Object,
+      required: true,
+      location: {
+        type: String,
+        required: true
+      },
+      key: {
+        type: String,
+        required: true
+      }
     },
     fallowers: {
       type: Number,
@@ -31,7 +39,7 @@ const userSchema = new Schema(
     },
     numberOfPosts: {
       type: Number,
-      default: 1
+      default: 0
     },
     description: {
       type: String,

@@ -2,7 +2,7 @@ const express = require("express");
 
 const authControllers = require("../controllers/auth");
 
-const s3Upload = require("../services/aws/s3");
+const s3Upload = require("../services/aws/s3").uploadImage;
 
 const router = express.Router();
 
