@@ -5,7 +5,7 @@ const User = require("../models/user");
 
 module.exports = (req, res, next) => {
   const authHeader = req.get("Authorization");
-  if (authHeader) {
+  if (!authHeader) {
     const err = new Error("Authorization failed");
     err.statusCode = 401;
     return next(err);

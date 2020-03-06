@@ -4,6 +4,8 @@ const User = require("../models/user");
 
 const userControllers = require("../controllers/user");
 
+const isAuth = require("../middleware/is-auth");
+
 const router = express.Router();
 
 // GET => /users/:username
