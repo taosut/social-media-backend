@@ -34,7 +34,8 @@ exports.signUp = async (req, res, next) => {
         location: profileImage.location,
         key: profileImage.key
       },
-      password: hashedPassword
+      password: hashedPassword,
+      posts: []
     });
 
     await newUser.save();
@@ -84,7 +85,8 @@ exports.signIn = async (req, res, next) => {
     res.status(200).json({
       message: "User successfully logged in",
       token: token,
-      tokenExpiration: jwt.verify(token, process.env.JWT_SECRET_KEY).exp
+      tokenExpiration: jwt.verify(token, process.env.JWT_SECRET_KEY).exp,
+      user: loggedUser
     });
   } catch (err) {}
 };
