@@ -7,6 +7,7 @@ require("dotenv").config();
 const app = express();
 
 const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/user");
 
 app.use(bodyParser.json());
 
@@ -28,6 +29,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 });
 
 app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 
 app.use((req, res, next) => {
   return res.status(404).json({

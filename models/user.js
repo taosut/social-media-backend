@@ -46,7 +46,8 @@ const userSchema = new Schema(
       type: String,
       default: ""
     },
-    posts: [{ type: Schema.Types.ObjectId, ref: "Post" }]
+    posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+    taggedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }]
   },
   {
     timestamps: true

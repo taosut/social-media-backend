@@ -35,7 +35,8 @@ exports.signUp = async (req, res, next) => {
         key: profileImage.key
       },
       password: hashedPassword,
-      posts: []
+      posts: [],
+      taggedPosts: []
     });
 
     await newUser.save();
