@@ -6,7 +6,8 @@ const userSchema = new Schema(
   {
     username: {
       type: String,
-      required: true
+      required: true,
+      index: true
     },
     email: {
       type: String,
@@ -43,7 +44,7 @@ const userSchema = new Schema(
     },
     description: {
       type: String,
-      required: true
+      default: ""
     },
     posts: [{ type: Schema.Types.ObjectId, ref: "Post" }]
   },

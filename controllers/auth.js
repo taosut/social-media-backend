@@ -8,15 +8,22 @@ const deleteS3Object = require("../services/aws/s3").deleteObject;
 const User = require("../models/user");
 
 exports.signUp = async (req, res, next) => {
-  const username = req.body.username;
+  const username = req.body.username.toLowerCase();
   const email = req.body.email;
   const password = req.body.password;
   const description = req.body.description;
   const profileImage = req.file;
 
-  // validate
+  const errors = validationResult(req);
 
   try {
+    if (!errors.isEmpty()) {
+      const err = new Error("Validation failed");
+      err.statusCode = 406;
+      err.errors = errors.array();
+      throw err;
+    }
+
     const hashedPassword = await bcrypt.hash(password, 12);
 
     let user = new User({
@@ -35,10 +42,10 @@ exports.signUp = async (req, res, next) => {
     return res.status(200).json({ message: "User successfully created" });
   } catch (err) {
     if (err.name === "ValidationError") {
-      err.message = "User validation failed";
-
-      deleteS3Object(process.env.AWS_BUCKET_NAME, profileImage.key);
+      err.message = "Validation failed";
     }
+
+    deleteS3Object(process.env.AWS_BUCKET_NAME, profileImage.key);
 
     if (!err.statusCode) err.statusCode = 500;
     next(err);

@@ -36,6 +36,7 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
+  console.log(error);
   if (!error.statusCode) error.statusCode = 500;
   if (!error.message) error.message = "An error occurred";
 
