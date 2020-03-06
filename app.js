@@ -8,6 +8,7 @@ const app = express();
 
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
+const postRoutes = require("./routes/post");
 
 app.use(bodyParser.json());
 
@@ -30,6 +31,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
+app.use("/posts", postRoutes);
 
 app.use((req, res, next) => {
   return res.status(404).json({
