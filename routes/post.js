@@ -36,4 +36,16 @@ router.post(
   postControllers.createPost
 );
 
+// GET => /posts/:post
+router.get(
+  "/:post",
+  isAuth,
+  [
+    param("post")
+      .isMongoId()
+      .trim()
+  ],
+  postControllers.getPost
+);
+
 module.exports = router;
