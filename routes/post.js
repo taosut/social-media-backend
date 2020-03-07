@@ -48,4 +48,16 @@ router.get(
   postControllers.getPost
 );
 
+// DELETE => /posts/delete-post
+router.delete(
+  "/delete-post",
+  isAuth,
+  [
+    body("postId")
+      .isMongoId()
+      .trim()
+  ],
+  postControllers.deletePost
+);
+
 module.exports = router;

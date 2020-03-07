@@ -32,6 +32,11 @@ const postSchema = new Schema(
     likes: {
       type: Number,
       default: 0
+    },
+    creator: {
+      type: Schema.Types.ObjectId,
+      ref: "Comment",
+      required: true
     }
   },
   {

@@ -26,7 +26,8 @@ exports.createPost = async (req, res, next) => {
         location: image.location,
         key: image.key
       },
-      comments: []
+      comments: [],
+      creator: req.userId
     });
 
     await newPost.save();
@@ -71,6 +72,40 @@ exports.getPost = async (req, res, next) => {
     return res.status(200).json({
       message: "Post successfully fetched",
       post: thePost
+    });
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
+    next(err);
+  }
+};
+
+exports.deletePost = async (req, res, next) => {
+  const postId = req.body.postId;
+
+  const errors = validationResult(req);
+
+  try {
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed");
+      error.statusCode = 406;
+      throw err;
+    }
+
+    const deletePost = await Post.findById(postId);
+
+    if (!deletePost) return res.status(404).json({ message: "Post not found" });
+
+    if (deletePost.creator.toString() !== req.userId.toString())
+      return res.status(401).json({
+        message: "Action is forbidden"
+      });
+
+    await Post.deleteOne({ _id: postId });
+    await User.updateOne({ _id: req.userId }, { $pull: { posts: postId } });
+    deleteS3Object(process.env.AWS_BUCKET_NAME, deletePost.image.key);
+
+    return res.status(200).json({
+      message: "Post successfully deleted"
     });
   } catch (err) {
     if (!err.statusCode) err.statusCode = 500;
