@@ -60,4 +60,7 @@ router.delete(
   postControllers.deletePost
 );
 
+// GET => /posts ** VALIDATE THIS **
+router.get("/", isAuth, postControllers.getPosts);
+
 module.exports = router;

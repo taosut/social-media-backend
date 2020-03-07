@@ -112,3 +112,43 @@ exports.deletePost = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getPosts = async (req, res, next) => {
+  // VALIDATE THIS
+  const skipPosts = Number(req.query.skip) || 0;
+  const limitPosts = Number(req.query.limit) || 50;
+
+  const errors = validationResult(req);
+
+  try {
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed");
+      error.statusCode = 406;
+      throw err;
+    }
+
+    const loggedUser = await User.findById(req.userId, 'following');
+    // 204
+    if (!loggedUser.fallowing.length)
+      return res.status(200).json({
+        message: "No Content"
+      });
+    console.log(loggedUser);
+    const newPosts = Post.find({ creator: { $in: loggedUser.following } })
+      .skip(skipPosts)
+      .limit(limitPosts);
+
+    if (!newPosts.length)
+      return res.status(200).json({
+        message: "No Content"
+      });
+
+    return res.status(200).json({
+      message: "Posts successfully fetched",
+      posts: newPosts
+    });
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
+    next(err);
+  }
+};

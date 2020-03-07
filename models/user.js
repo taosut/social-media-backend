@@ -30,16 +30,16 @@ const userSchema = new Schema(
         required: true
       }
     },
-    fallowersNumber: {
+    followersNumber: {
       type: Number,
       default: 0
     },
-    fallowers: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    fallowingNumber: {
+    followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    followingNumber: {
       type: Number,
       default: 0
     },
-    fallowing: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    following: [{ type: Schema.Types.ObjectId, ref: "User" }],
     postsNumber: {
       type: Number,
       default: 0

@@ -35,7 +35,7 @@ const postSchema = new Schema(
     },
     creator: {
       type: Schema.Types.ObjectId,
-      ref: "Comment",
+      ref: "User",
       required: true
     }
   },
