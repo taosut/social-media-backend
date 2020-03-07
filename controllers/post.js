@@ -127,25 +127,25 @@ exports.getPosts = async (req, res, next) => {
       throw err;
     }
 
-    const loggedUser = await User.findById(req.userId, 'following');
+    const loggedUser = await User.findById(req.userId, "following");
     // 204
-    if (!loggedUser.fallowing.length)
+    if (!loggedUser.following.length)
       return res.status(200).json({
         message: "No Content"
       });
-    console.log(loggedUser);
-    const newPosts = Post.find({ creator: { $in: loggedUser.following } })
+
+    const feed = await Post.find({ creator: { $in: loggedUser.following } })
       .skip(skipPosts)
       .limit(limitPosts);
 
-    if (!newPosts.length)
+    if (!feed.length)
       return res.status(200).json({
         message: "No Content"
       });
 
     return res.status(200).json({
       message: "Posts successfully fetched",
-      posts: newPosts
+      posts: feed
     });
   } catch (err) {
     if (!err.statusCode) err.statusCode = 500;
