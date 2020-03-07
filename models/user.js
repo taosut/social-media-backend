@@ -30,15 +30,17 @@ const userSchema = new Schema(
         required: true
       }
     },
-    fallowers: {
+    fallowersNumber: {
       type: Number,
       default: 0
     },
-    fallowing: {
+    fallowers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    fallowingNumber: {
       type: Number,
       default: 0
     },
-    numberOfPosts: {
+    fallowing: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    postsNumber: {
       type: Number,
       default: 0
     },
