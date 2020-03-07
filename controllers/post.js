@@ -16,7 +16,7 @@ exports.createPost = async (req, res, next) => {
     if (!errors.isEmpty()) {
       const error = new Error("Validation failed");
       error.statusCode = 406;
-      throw err;
+      throw error;
     }
 
     const newPost = new Post({
@@ -46,7 +46,7 @@ exports.createPost = async (req, res, next) => {
       err.message = "Validation failed";
     }
 
-    deleteS3Object(process.env.AWS_BUCKET_NAME, profileImage.key);
+    deleteS3Object(process.env.AWS_BUCKET_NAME, image.key);
 
     if (!err.statusCode) err.statusCode = 500;
     next(err);
@@ -62,7 +62,7 @@ exports.getPost = async (req, res, next) => {
     if (!errors.isEmpty()) {
       const error = new Error("Validation failed");
       error.statusCode = 406;
-      throw err;
+      throw error;
     }
 
     const thePost = await Post.findById(postId).populate("comments");
@@ -88,7 +88,7 @@ exports.deletePost = async (req, res, next) => {
     if (!errors.isEmpty()) {
       const error = new Error("Validation failed");
       error.statusCode = 406;
-      throw err;
+      throw error;
     }
 
     const deletePost = await Post.findById(postId);
@@ -124,11 +124,11 @@ exports.getPosts = async (req, res, next) => {
     if (!errors.isEmpty()) {
       const error = new Error("Validation failed");
       error.statusCode = 406;
-      throw err;
+      throw error;
     }
 
     const loggedUser = await User.findById(req.userId, "following");
-    // 204
+
     if (!loggedUser.following.length)
       return res.status(200).json({
         message: "No Content"
@@ -148,6 +148,65 @@ exports.getPosts = async (req, res, next) => {
       posts: feed
     });
   } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
+    next(err);
+  }
+};
+
+exports.updatePost = async (req, res, next) => {
+  const postId = req.body.postId;
+  const title = req.body.title;
+  const description = req.body.description;
+  const image = req.file;
+
+  const errors = validationResult(req);
+
+  try {
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed");
+      error.statusCode = 406;
+      throw error;
+    }
+
+    const updatePost = await Post.findById(postId);
+
+    if (!updatePost) {
+      const error = new Error("Post not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (updatePost.creator.toString() !== req.userId.toString()) {
+      return res.status(401).json({
+        message: "Action is forbidden"
+      });
+    }
+
+    updatePost.title = title;
+    updatePost.description = description;
+
+    if (image) {
+      deleteS3Object(process.env.AWS_BUCKET_NAME, updatePost.image.key);
+      let newImage = {
+        location: image.location,
+        key: image.key
+      };
+      updatePost.image = newImage;
+    }
+
+    await updatePost.save();
+
+    res.status(200).json({
+      message: "Post successfully updated",
+      post: updatePost
+    });
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      err.message = "Validation failed";
+    }
+
+    deleteS3Object(process.env.AWS_BUCKET_NAME, image.key);
+
     if (!err.statusCode) err.statusCode = 500;
     next(err);
   }

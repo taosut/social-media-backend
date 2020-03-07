@@ -21,7 +21,7 @@ exports.signUp = async (req, res, next) => {
       const err = new Error("Validation failed");
       err.statusCode = 406;
       err.errors = errors.array();
-      throw err;
+      throw error;
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);

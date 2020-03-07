@@ -11,7 +11,7 @@ exports.getUser = async (req, res, next) => {
     if (!errors.isEmpty()) {
       const error = new Error("Validation failed");
       error.statusCode = 406;
-      throw err;
+      throw error;
     }
 
     const theUser = await User.findOne({ username: username })

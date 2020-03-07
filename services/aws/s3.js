@@ -43,6 +43,7 @@ const upload = multer({
           folder = "profile-images/";
           break;
         case "/create-post":
+        case "/update-post":
           folder = "post-images/";
           break;
         default:
