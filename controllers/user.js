@@ -14,7 +14,7 @@ exports.getUser = async (req, res, next) => {
       throw error;
     }
 
-    const theUser = await User.findOne({ username: username })
+    const theUser = await User.findOne({ username: username }, "-password")
       .populate("posts")
       .populate("taggedPosts");
 

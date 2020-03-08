@@ -7,6 +7,8 @@ const authControllers = require("../controllers/auth");
 
 const s3Upload = require("../services/aws/s3").uploadImage;
 
+const isAuth = require("../middleware/is-auth");
+
 const router = express.Router();
 
 // POST => /auth/sign-up
@@ -51,5 +53,8 @@ router.post(
 
 // POST => /auth/sign-in
 router.post("/sign-in", authControllers.signIn);
+
+// GET => /auth/user
+router.get("/user", isAuth, authControllers.getUser);
 
 module.exports = router;
