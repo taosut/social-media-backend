@@ -18,9 +18,14 @@ exports.signUp = async (req, res, next) => {
 
   try {
     if (!errors.isEmpty()) {
-      const err = new Error("Validation failed");
-      err.statusCode = 406;
-      err.errors = errors.array();
+      const message =
+        errors.array()[0].param === "email" ||
+        errors.array()[0].param === "username"
+          ? errors.array()[0].msg
+          : "Validation failed";
+      const error = new Error(message);
+      error.statusCode = 406;
+      error.errors = errors.array();
       throw error;
     }
 

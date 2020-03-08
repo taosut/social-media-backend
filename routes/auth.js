@@ -27,7 +27,7 @@ router.post(
       .custom(async value => {
         const user = await User.findOne({ username: value });
 
-        if (user) return Promise.reject("Username already in use");
+        if (user) return Promise.reject("Username is already in use");
       })
       .trim(),
     body("email")
@@ -35,7 +35,7 @@ router.post(
       .custom(async value => {
         const user = await User.findOne({ email: value });
 
-        if (user) return Promise.reject("E-mail already in use");
+        if (user) return Promise.reject("E-mail is already in use");
       })
       .normalizeEmail(),
     body("description")
