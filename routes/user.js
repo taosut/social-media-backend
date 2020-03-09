@@ -28,4 +28,23 @@ router.get(
   userControllers.getUser
 );
 
+// GET => /users/search
+router.get(
+  "/search/:username",
+  isAuth,
+  [
+    param("username")
+      .isString()
+      .custom(value => {
+        const regEx = /^[\w\.\-\_]+$/;
+
+        if (!regEx.test(value)) throw new Error("Character validation failed");
+
+        return true;
+      })
+      .trim()
+  ],
+  userControllers.usersSearch
+);
+
 module.exports = router;
