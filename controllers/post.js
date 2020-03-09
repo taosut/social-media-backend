@@ -34,7 +34,7 @@ exports.createPost = async (req, res, next) => {
 
     await User.updateOne(
       { _id: req.userId },
-      { $push: { posts: newPost._id } }
+      { $push: { posts: newPost._id }, $inc: { postsNumber: 1 } }
     );
 
     res.status(200).json({
@@ -101,7 +101,10 @@ exports.deletePost = async (req, res, next) => {
       });
 
     await Post.deleteOne({ _id: postId });
-    await User.updateOne({ _id: req.userId }, { $pull: { posts: postId } });
+    await User.updateOne(
+      { _id: req.userId },
+      { $pull: { posts: postId }, $inc: { postsNumber: -1 } }
+    );
     deleteS3Object(process.env.AWS_BUCKET_NAME, deletePost.image.key);
 
     return res.status(200).json({
