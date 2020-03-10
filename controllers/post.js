@@ -119,7 +119,9 @@ exports.deletePost = async (req, res, next) => {
 exports.getPosts = async (req, res, next) => {
   // VALIDATE THIS
   const skipPosts = Number(req.query.skip) || 0;
-  const limitPosts = Number(req.query.limit) || 50;
+  let limitPosts = Number(req.query.limit) || 50;
+
+  limitPosts = limitPosts > 100 ? 100 : limitPosts;
 
   const errors = validationResult(req);
 
@@ -134,17 +136,14 @@ exports.getPosts = async (req, res, next) => {
 
     if (!loggedUser.following.length)
       return res.status(200).json({
-        message: "No Content"
+        message: "No Content",
+        posts: []
       });
 
     const feed = await Post.find({ creator: { $in: loggedUser.following } })
       .skip(skipPosts)
-      .limit(limitPosts);
-
-    if (!feed.length)
-      return res.status(200).json({
-        message: "No Content"
-      });
+      .limit(limitPosts)
+      .populate({ path: "creator", select: "username profileImage" });
 
     return res.status(200).json({
       message: "Posts successfully fetched",
