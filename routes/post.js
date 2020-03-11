@@ -55,6 +55,18 @@ router.get(
   postControllers.getPost
 );
 
+// GET => /posts/get-post-for-update/:post
+router.get(
+  "/get-post-for-update/:post",
+  isAuth,
+  [
+    param("post")
+      .isMongoId()
+      .trim()
+  ],
+  postControllers.getPostForUpdate
+);
+
 // DELETE => /posts/delete-post
 router.delete(
   "/delete-post",

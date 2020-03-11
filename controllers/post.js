@@ -45,8 +45,7 @@ exports.createPost = async (req, res, next) => {
     if (err.name === "ValidationError") {
       err.message = "Validation failed";
     }
-
-    deleteS3Object(process.env.AWS_BUCKET_NAME, image.key);
+    if (image) deleteS3Object(process.env.AWS_BUCKET_NAME, image.key);
 
     if (!err.statusCode) err.statusCode = 500;
     next(err);
@@ -65,9 +64,39 @@ exports.getPost = async (req, res, next) => {
       throw error;
     }
 
-    const thePost = await await Post.findById(postId)
+    const thePost = await Post.findById(postId)
       .populate({ path: "creator", select: "username profileImage" })
       .populate("comments");
+
+    if (!thePost) return res.status(404).json({ message: "Post not found" });
+
+    return res.status(200).json({
+      message: "Post successfully fetched",
+      post: thePost
+    });
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
+    next(err);
+  }
+};
+
+exports.getPostForUpdate = async (req, res, next) => {
+  const postId = req.params.post;
+
+  const errors = validationResult(req);
+
+  try {
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed");
+      error.statusCode = 406;
+      throw error;
+    }
+
+    const thePost = await Post.findById(postId, {
+      title: 1,
+      description: 1,
+      image: 1
+    });
 
     if (!thePost) return res.status(404).json({ message: "Post not found" });
 
@@ -208,8 +237,7 @@ exports.updatePost = async (req, res, next) => {
     if (err.name === "ValidationError") {
       err.message = "Validation failed";
     }
-
-    deleteS3Object(process.env.AWS_BUCKET_NAME, image.key);
+    if (image) deleteS3Object(process.env.AWS_BUCKET_NAME, image.key);
 
     if (!err.statusCode) err.statusCode = 500;
     next(err);
