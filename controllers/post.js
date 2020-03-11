@@ -119,7 +119,6 @@ exports.deletePost = async (req, res, next) => {
 };
 
 exports.getPosts = async (req, res, next) => {
-  // VALIDATE THIS
   const skipPosts = Number(req.query.skip) || 0;
   let limitPosts = Number(req.query.limit) || 50;
 
@@ -143,6 +142,7 @@ exports.getPosts = async (req, res, next) => {
       });
 
     const feed = await Post.find({ creator: { $in: loggedUser.following } })
+      .sort({ _id: "-1" })
       .skip(skipPosts)
       .limit(limitPosts)
       .populate({ path: "creator", select: "username profileImage" });

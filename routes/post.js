@@ -1,5 +1,5 @@
 const express = require("express");
-const { body, param } = require("express-validator");
+const { body, param, query } = require("express-validator");
 const slowDown = require("express-slow-down");
 
 const Post = require("../models/post");
@@ -67,8 +67,25 @@ router.delete(
   postControllers.deletePost
 );
 
-// GET => /posts ** VALIDATE THIS **
-router.get("/", getPostsSpeedLimiter, isAuth, postControllers.getPosts);
+// GET => /posts
+router.get(
+  "/",
+  getPostsSpeedLimiter,
+  isAuth,
+  [
+    query("skip").custom(value => {
+      if (Number.isNaN(Number(value)) || Number(value) < 0) return false;
+
+      return true;
+    }),
+    query("limit").custom(value => {
+      if (Number.isNaN(Number(value)) || Number(value) < 0) return false;
+
+      return true;
+    })
+  ],
+  postControllers.getPosts
+);
 
 // PATCH => /posts/update-post
 router.patch(
