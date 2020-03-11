@@ -65,7 +65,9 @@ exports.getPost = async (req, res, next) => {
       throw error;
     }
 
-    const thePost = await Post.findById(postId).populate("comments");
+    const thePost = await await Post.findById(postId)
+      .populate({ path: "creator", select: "username profileImage" })
+      .populate("comments");
 
     if (!thePost) return res.status(404).json({ message: "Post not found" });
 

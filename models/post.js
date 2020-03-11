@@ -29,6 +29,10 @@ const postSchema = new Schema(
       required: true,
       comment: { type: Schema.Types.ObjectId, ref: "Comment" }
     },
+    commentsNumber: {
+      type: Number,
+      default: 0
+    },
     likes: {
       type: Number,
       default: 0

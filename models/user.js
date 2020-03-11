@@ -48,6 +48,7 @@ const userSchema = new Schema(
       type: String,
       default: ""
     },
+    likedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     taggedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }]
   },
