@@ -4,11 +4,13 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-const app = express();
-
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const postRoutes = require("./routes/post");
+
+const app = express();
+
+app.enable("trust proxy");
 
 app.use(bodyParser.json());
 
