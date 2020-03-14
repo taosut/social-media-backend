@@ -119,7 +119,8 @@ exports.deleteAccount = async (req, res, next) => {
       };
     });
 
-    deleteS3Objects(process.env.AWS_BUCKET_NAME, postsImages);
+    if (postsImages.length)
+      deleteS3Objects(process.env.AWS_BUCKET_NAME, postsImages);
 
     // REMOVE POST COMMENTS
     const postsComments = [];
