@@ -162,3 +162,94 @@ exports.deleteAccount = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.updateAccount = async (req, res, next) => {
+  const username = req.body.username.toLowerCase();
+  const currentPassword = req.body.currentPassword;
+  const newPassword = req.body.newPassword;
+  const profileImage = req.file;
+  const description = req.body.description;
+
+  const errors = validationResult(req);
+
+  try {
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed");
+      error.statusCode = 406;
+      throw error;
+    }
+
+    const userAccount = await User.findById(req.userId);
+
+    if (!userAccount) {
+      const error = new Error("An error occured");
+      error.statusCode = 500;
+      throw error;
+    }
+    // USERNAME CHECK & CHANGE
+    if (userAccount.username !== username) {
+      let usernameExist = await User.findOne({
+        username: username
+      }).countDocuments();
+
+      if (usernameExist) {
+        const error = new Error("Username is already in use");
+        error.statusCode = 406;
+        throw error;
+      }
+
+      userAccount.username = username;
+    }
+
+    // DESCRIPTION CHECK & CHANGE
+    if (userAccount.description !== description)
+      userAccount.description = description;
+
+    // PASSWORD CHECK & CHANGE
+    if (currentPassword) {
+      const passwordMatch = await bcrypt.compare(
+        currentPassword,
+        userAccount.password
+      );
+
+      if (!passwordMatch) {
+        const error = new Error("Invalid password");
+        error.statusCode = 406;
+        throw error;
+      }
+
+      if (newPassword.length < 8 || newPassword.length > 100) {
+        const error = new Error("Validation failed");
+        error.statusCode = 406;
+        throw error;
+      }
+
+      const newHashedPassword = await bcrypt.hash(newPassword, 12);
+      userAccount.password = newHashedPassword;
+    }
+
+    // PROFILE IMAGE CHECK & CHANGE
+    if (profileImage) {
+      deleteS3Object(process.env.AWS_BUCKET_NAME, userAccount.profileImage.key);
+
+      userAccount.profileImage = {
+        key: profileImage.key,
+        location: profileImage.location
+      };
+    }
+
+    await userAccount.save();
+
+    res.status(200).json({
+      message: "Account successfully updated",
+      user: userAccount
+    });
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
+
+    if (profileImage)
+      deleteS3Object(process.env.AWS_BUCKET_NAME, profileImage.key);
+
+    next(err);
+  }
+};

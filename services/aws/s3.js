@@ -40,6 +40,7 @@ const upload = multer({
       let folder;
       switch (req.route.path) {
         case "/sign-up":
+        case "/update-account":
           folder = "profile-images/";
           break;
         case "/create-post":
