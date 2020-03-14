@@ -47,4 +47,21 @@ router.get(
   userControllers.usersSearch
 );
 
+// DELETE /users/delete-account
+router.delete(
+  "/delete-account",
+  isAuth,
+  [
+    body("email")
+      .isEmail()
+      .normalizeEmail(),
+    body("password")
+      .isLength({ min: 8, max: 100 })
+      .withMessage("Invalid password length")
+  ],
+  userControllers.deleteAccount
+);
+
+// PATCH /users/username
+
 module.exports = router;

@@ -65,11 +65,26 @@ const deleteObject = function(bucketName, objectKey) {
   };
 
   s3.deleteObject(params, function(error, data) {
-    if (error) console.log(err, err.stack);
+    if (error) console.log(error, error.stack);
+  });
+};
+
+const deleteObjects = function(bucketName, objects) {
+  const params = {
+    Bucket: bucketName,
+    Delete: {
+      Objects: objects,
+      Quiet: true
+    }
+  };
+
+  s3.deleteObjects(params, function(error, data) {
+    if (error) console.log(error, error.stack);
   });
 };
 
 module.exports = {
   uploadImage: upload,
-  deleteObject: deleteObject
+  deleteObject: deleteObject,
+  deleteObjects: deleteObjects
 };
