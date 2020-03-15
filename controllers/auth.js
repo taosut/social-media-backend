@@ -101,7 +101,10 @@ exports.signIn = async (req, res, next) => {
 
 exports.getUser = async (req, res, next) => {
   try {
-    const theUser = await User.findById(req.userId, "-password");
+    const theUser = await User.findById(
+      req.userId,
+      "username email profileImage"
+    );
 
     if (!theUser) {
       return res.status(404).json({
