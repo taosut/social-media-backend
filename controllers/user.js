@@ -274,7 +274,13 @@ exports.setLikedPosts = async (req, res, next) => {
       throw error;
     }
 
+    let likedPostsNumber = userAccount.likedPosts.length;
+
     await userAccount.setLikedPosts(postId);
+
+    if (likedPostsNumber < userAccount.likedPosts.length)
+      await Post.updateOne({ _id: postId }, { $inc: { likes: 1 } });
+    else await Post.updateOne({ _id: postId }, { $inc: { likes: -1 } });
 
     res.status(200).json({
       message: "Liked posts successfully updated",

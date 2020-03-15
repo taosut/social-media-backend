@@ -112,6 +112,7 @@ exports.getPostForUpdate = async (req, res, next) => {
 
 exports.deletePost = async (req, res, next) => {
   const postId = req.body.postId;
+  const postIdArr = [postId];
 
   const errors = validationResult(req);
 
@@ -135,7 +136,7 @@ exports.deletePost = async (req, res, next) => {
     await Post.deleteOne({ _id: postId });
     await User.updateOne(
       { _id: req.userId },
-      { $pull: { posts: postId }, $inc: { postsNumber: -1 } }
+      { $pullAll: { posts: postArr }, $inc: { postsNumber: -1 } }
     );
 
     // DELETE POST IMAGE
@@ -144,7 +145,6 @@ exports.deletePost = async (req, res, next) => {
     // DELETE POST COMMENTS
 
     // REMOVE POST FROM USER LIKED POSTS
-    const postIdArr = [postId];
     await User.updateMany(
       { likedPosts: postId },
       { $pullAll: { likedPosts: postIdArr } }
