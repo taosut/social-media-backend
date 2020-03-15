@@ -59,11 +59,11 @@ const userSchema = new Schema(
 
 userSchema.methods.setLikedPosts = function(postId) {
   let likedPosts = this.likedPosts;
-  let postAlreadyLiked = likedPosts.findIndex(
+  let postAlreadyLiked = likedPosts.some(
     likedPostId => likedPostId.toString() === postId.toString()
   );
 
-  if (postAlreadyLiked !== -1) {
+  if (postAlreadyLiked) {
     likedPosts = likedPosts.filter(
       likedPostId => likedPostId.toString() !== postId.toString()
     );
