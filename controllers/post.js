@@ -131,12 +131,24 @@ exports.deletePost = async (req, res, next) => {
         message: "Action is forbidden"
       });
 
+    // DELETE POST
     await Post.deleteOne({ _id: postId });
     await User.updateOne(
       { _id: req.userId },
       { $pull: { posts: postId }, $inc: { postsNumber: -1 } }
     );
+
+    // DELETE POST IMAGE
     deleteS3Object(process.env.AWS_BUCKET_NAME, deletePost.image.key);
+
+    // DELETE POST COMMENTS
+
+    // REMOVE POST FROM USER LIKED POSTS
+    const postIdArr = [postId];
+    await User.updateMany(
+      { likedPosts: postId },
+      { $pullAll: { likedPosts: postIdArr } }
+    );
 
     return res.status(200).json({
       message: "Post successfully deleted"

@@ -27,7 +27,7 @@ router.get(
       })
       .trim()
   ],
-  userControllers.getUser
+  userControllers.getUserProfile
 );
 
 // GET => /users/search
@@ -87,6 +87,18 @@ router.patch(
       .trim()
   ],
   userControllers.updateAccount
+);
+
+// PUT /users/user/set-liked-posts
+router.put(
+  "/user/set-liked-posts",
+  isAuth,
+  [
+    body("postId")
+      .isMongoId()
+      .trim()
+  ],
+  userControllers.setLikedPosts
 );
 
 module.exports = router;

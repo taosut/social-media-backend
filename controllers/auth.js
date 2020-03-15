@@ -100,11 +100,18 @@ exports.signIn = async (req, res, next) => {
 };
 
 exports.getUser = async (req, res, next) => {
+  let projection = req.query.projection.trim() || "username email profileImage";
+
+  const projectionRegEx = /^[a-zA-z\+\-\s]+$/gi;
+
   try {
-    const theUser = await User.findById(
-      req.userId,
-      "username email profileImage"
-    );
+    if (!projectionRegEx.test(projection)) {
+      const err = new Error("Validation failed");
+      err.statusCode = 406;
+      throw err;
+    }
+
+    const theUser = await User.findById(req.userId, projection);
 
     if (!theUser) {
       return res.status(404).json({

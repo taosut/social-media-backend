@@ -8,7 +8,7 @@ const Post = require("../models/post");
 const deleteS3Object = require("../services/aws/s3").deleteObject;
 const deleteS3Objects = require("../services/aws/s3").deleteObjects;
 
-exports.getUser = async (req, res, next) => {
+exports.getUserProfile = async (req, res, next) => {
   const username = req.params.username;
 
   const errors = validationResult(req);
@@ -250,6 +250,38 @@ exports.updateAccount = async (req, res, next) => {
     if (profileImage)
       deleteS3Object(process.env.AWS_BUCKET_NAME, profileImage.key);
 
+    next(err);
+  }
+};
+
+exports.setLikedPosts = async (req, res, next) => {
+  const postId = req.body.postId;
+
+  const errors = validationResult(req);
+
+  try {
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed");
+      error.statusCode = 406;
+      throw error;
+    }
+
+    const userAccount = await User.findById(req.userId);
+
+    if (!userAccount) {
+      const error = new Error("An error occured");
+      error.statusCode = 500;
+      throw error;
+    }
+
+    await userAccount.setLikedPosts(postId);
+
+    res.status(200).json({
+      message: "Liked posts successfully updated",
+      likedPosts: userAccount.likedPosts
+    });
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
     next(err);
   }
 };

@@ -57,4 +57,22 @@ const userSchema = new Schema(
   }
 );
 
+userSchema.methods.setLikedPosts = function(postId) {
+  let likedPosts = this.likedPosts;
+  let postAlreadyLiked = likedPosts.findIndex(
+    likedPostId => likedPostId.toString() === postId.toString()
+  );
+
+  if (postAlreadyLiked !== -1) {
+    likedPosts = likedPosts.filter(
+      likedPostId => likedPostId.toString() !== postId.toString()
+    );
+  } else {
+    likedPosts.push(postId);
+  }
+
+  this.likedPosts = likedPosts;
+  return this.save();
+};
+
 module.exports = mongoose.model("User", userSchema);
