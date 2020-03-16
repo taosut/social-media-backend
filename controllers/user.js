@@ -135,7 +135,7 @@ exports.deleteAccount = async (req, res, next) => {
     posts.forEach(async postId => {
       const postObjectId = new mongoose.Types.ObjectId(postId);
       await User.updateMany(
-        { likedPosts: post },
+        { likedPosts: postId },
         { $pull: { likedPosts: postObjectId } }
       );
     });
