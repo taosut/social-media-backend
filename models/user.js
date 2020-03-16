@@ -65,7 +65,7 @@ userSchema.methods.setLikedPosts = function(postId) {
 
 userSchema.methods.setFollowing = function(userId) {
   let following = this.following;
-  let isAlreadyFollowing = likedPosts.some(
+  let isAlreadyFollowing = following.some(
     followingUserId => followingUserId.toString() === userId.toString()
   );
 
@@ -74,7 +74,7 @@ userSchema.methods.setFollowing = function(userId) {
       followingUserId => followingUserId.toString() !== userId.toString()
     );
   } else {
-    following.push(followingUserId);
+    following.push(userId);
   }
 
   this.following = following;

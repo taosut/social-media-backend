@@ -322,9 +322,10 @@ exports.setFollowing = async (req, res, next) => {
         { $push: { followers: userAccount._id } }
       );
     } else {
+      const userAccountObjectId = new mongoose.Types.ObjectId(userAccount._id);
       await User.updateOne(
         { _id: userId },
-        { $pull: { followers: userAccount._id } }
+        { $pull: { followers: userAccountObjectId } }
       );
     }
 
