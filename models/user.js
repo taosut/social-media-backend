@@ -30,20 +30,8 @@ const userSchema = new Schema(
         required: true
       }
     },
-    followersNumber: {
-      type: Number,
-      default: 0
-    },
     followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    followingNumber: {
-      type: Number,
-      default: 0
-    },
     following: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    postsNumber: {
-      type: Number,
-      default: 0
-    },
     description: {
       type: String,
       default: ""
@@ -76,7 +64,6 @@ userSchema.methods.setLikedPosts = function(postId) {
 };
 
 userSchema.methods.setFollowing = function(userId) {
-  let followingNumber = this.followingNumber;
   let following = this.following;
   let isAlreadyFollowing = likedPosts.some(
     followingUserId => followingUserId.toString() === userId.toString()
@@ -86,14 +73,12 @@ userSchema.methods.setFollowing = function(userId) {
     following = following.filter(
       followingUserId => followingUserId.toString() !== userId.toString()
     );
-    followingNumber--;
   } else {
     following.push(followingUserId);
-    followingNumber++;
   }
 
   this.following = following;
-  this.followingNumber = followingNumber;
+
   return this.save();
 };
 

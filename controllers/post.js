@@ -35,7 +35,7 @@ exports.createPost = async (req, res, next) => {
 
     await User.updateOne(
       { _id: req.userId },
-      { $push: { posts: newPost._id }, $inc: { postsNumber: 1 } }
+      { $push: { posts: newPost._id } }
     );
 
     res.status(200).json({
@@ -113,6 +113,7 @@ exports.getPostForUpdate = async (req, res, next) => {
 
 exports.deletePost = async (req, res, next) => {
   const postId = req.body.postId;
+  const postObjectId = new mongoose.Types.ObjectId(postId);
 
   const errors = validationResult(req);
 
@@ -137,8 +138,7 @@ exports.deletePost = async (req, res, next) => {
     await User.updateOne(
       { _id: req.userId },
       {
-        $pull: { posts: new mongoose.Types.ObjectId(postId) },
-        $inc: { postsNumber: -1 }
+        $pull: { posts: postObjectId }
       }
     );
 
@@ -150,7 +150,7 @@ exports.deletePost = async (req, res, next) => {
     // REMOVE POST FROM USER LIKED POSTS
     await User.updateMany(
       { likedPosts: postId },
-      { $pull: { likedPosts: new mongoose.Types.ObjectId(postId) } }
+      { $pull: { likedPosts: postObjectId } }
     );
 
     return res.status(200).json({

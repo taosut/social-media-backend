@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
+const mongoose = require("mongoose");
 
 const User = require("../models/user");
 const Post = require("../models/post");
@@ -131,21 +132,20 @@ exports.deleteAccount = async (req, res, next) => {
     // remove comments from comments collection...
 
     // REMOVE DELETED POSTS FROM USER LIKED POSTS
-    posts.forEach(async post => {
-      const postArr = [post];
+    posts.forEach(async postId => {
+      const postObjectId = new mongoose.Types.ObjectId(postId);
       await User.updateMany(
         { likedPosts: post },
-        { $pullAll: { likedPosts: postArr } }
+        { $pull: { likedPosts: postObjectId } }
       );
     });
 
     // REMOVE USER FROM FOLLOWING
-    const userAccountId = [userAccount._id];
+    const userObjectId = new mongoose.Types.ObjectId(userAccount._id);
     await User.updateMany(
       { following: userAccount._id },
       {
-        $pullAll: { following: userAccountId },
-        $inc: { followingNumber: -1 }
+        $pull: { following: userObjectId }
       }
     );
 
@@ -319,12 +319,12 @@ exports.setFollowing = async (req, res, next) => {
     if (followingNumber < userAccount.following.length) {
       await User.updateOne(
         { _id: userId },
-        { $inc: { followersNumber: 1 }, $push: { followers: userAccount._id } }
+        { $push: { followers: userAccount._id } }
       );
     } else {
       await User.updateOne(
         { _id: userId },
-        { $inc: { followersNumber: -1 }, $pull: { followers: userAccount._id } }
+        { $pull: { followers: userAccount._id } }
       );
     }
 
