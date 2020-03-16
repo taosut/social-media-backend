@@ -49,7 +49,7 @@ router.get(
   userControllers.usersSearch
 );
 
-// DELETE /users/delete-account
+// DELETE => /users/delete-account
 router.delete(
   "/delete-account",
   isAuth,
@@ -64,7 +64,7 @@ router.delete(
   userControllers.deleteAccount
 );
 
-// PATCH /users/update-account
+// PATCH => /users/update-account
 router.patch(
   "/update-account",
   isAuth,
@@ -89,7 +89,7 @@ router.patch(
   userControllers.updateAccount
 );
 
-// PUT /users/user/set-liked-posts
+// PUT => /users/user/set-liked-posts
 router.put(
   "/user/set-liked-posts",
   isAuth,
@@ -99,6 +99,18 @@ router.put(
       .trim()
   ],
   userControllers.setLikedPosts
+);
+
+// PUT => /users/user/set-following
+router.put(
+  "/user/set-following",
+  isAuth,
+  [
+    body("userId")
+      .isMongoId()
+      .trim()
+  ],
+  userControllers.setFollowing
 );
 
 module.exports = router;

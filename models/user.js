@@ -59,11 +59,11 @@ const userSchema = new Schema(
 
 userSchema.methods.setLikedPosts = function(postId) {
   let likedPosts = this.likedPosts;
-  let postAlreadyLiked = likedPosts.some(
+  let isPostAlreadyLiked = likedPosts.some(
     likedPostId => likedPostId.toString() === postId.toString()
   );
 
-  if (postAlreadyLiked) {
+  if (isPostAlreadyLiked) {
     likedPosts = likedPosts.filter(
       likedPostId => likedPostId.toString() !== postId.toString()
     );
@@ -72,6 +72,28 @@ userSchema.methods.setLikedPosts = function(postId) {
   }
 
   this.likedPosts = likedPosts;
+  return this.save();
+};
+
+userSchema.methods.setFollowing = function(userId) {
+  let followingNumber = this.followingNumber;
+  let following = this.following;
+  let isAlreadyFollowing = likedPosts.some(
+    followingUserId => followingUserId.toString() === userId.toString()
+  );
+
+  if (isAlreadyFollowing) {
+    following = following.filter(
+      followingUserId => followingUserId.toString() !== userId.toString()
+    );
+    followingNumber--;
+  } else {
+    following.push(followingUserId);
+    followingNumber++;
+  }
+
+  this.following = following;
+  this.followingNumber = followingNumber;
   return this.save();
 };
 

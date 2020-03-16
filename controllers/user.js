@@ -291,3 +291,49 @@ exports.setLikedPosts = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.setFollowing = async (req, res, next) => {
+  const userId = req.body.userId;
+
+  const errors = validationResult(req);
+
+  try {
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed");
+      error.statusCode = 406;
+      throw error;
+    }
+
+    const userAccount = await User.findById(req.userId);
+
+    if (!userAccount) {
+      const error = new Error("An error occured");
+      error.statusCode = 500;
+      throw error;
+    }
+
+    let followingNumber = userAccount.following.length;
+
+    await userAccount.setFollowing(userId);
+
+    if (followingNumber < userAccount.following.length) {
+      await User.updateOne(
+        { _id: userId },
+        { $inc: { followersNumber: 1 }, $push: { followers: userAccount._id } }
+      );
+    } else {
+      await User.updateOne(
+        { _id: userId },
+        { $inc: { followersNumber: -1 }, $pull: { followers: userAccount._id } }
+      );
+    }
+
+    res.status(200).json({
+      message: "Following is set successfully",
+      following: userAccount.following
+    });
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
+    next(err);
+  }
+};

@@ -101,7 +101,7 @@ exports.signIn = async (req, res, next) => {
 
 exports.getUser = async (req, res, next) => {
   let projection = (
-    req.query.projection || "username email profileImage"
+    req.query.projection || "username email profileImage description"
   ).trim();
 
   const projectionRegEx = /^[a-zA-z\+\-\s]+$/gi;
