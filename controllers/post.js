@@ -1,4 +1,5 @@
 const { validationResult } = require("express-validator");
+const mongoose = require("mongoose");
 
 const deleteS3Object = require("../services/aws/s3").deleteObject;
 
@@ -112,7 +113,6 @@ exports.getPostForUpdate = async (req, res, next) => {
 
 exports.deletePost = async (req, res, next) => {
   const postId = req.body.postId;
-  const postIdArr = [postId];
 
   const errors = validationResult(req);
 
@@ -136,7 +136,10 @@ exports.deletePost = async (req, res, next) => {
     await Post.deleteOne({ _id: postId });
     await User.updateOne(
       { _id: req.userId },
-      { $pullAll: { posts: postArr }, $inc: { postsNumber: -1 } }
+      {
+        $pull: { posts: new mongoose.Types.ObjectId(postId) },
+        $inc: { postsNumber: -1 }
+      }
     );
 
     // DELETE POST IMAGE
@@ -147,7 +150,7 @@ exports.deletePost = async (req, res, next) => {
     // REMOVE POST FROM USER LIKED POSTS
     await User.updateMany(
       { likedPosts: postId },
-      { $pullAll: { likedPosts: postIdArr } }
+      { $pull: { likedPosts: new mongoose.Types.ObjectId(postId) } }
     );
 
     return res.status(200).json({
