@@ -9,11 +9,6 @@ const { body } = require("express-validator");
 const router = express.Router();
 
 // POST => /online-users
-router.post(
-  "/online-users",
-  isAuth,
-  [body("following").isArray()],
-  onlineUserController.getOnlineUsers
-);
+router.post("/online-users", isAuth, onlineUserController.getOnlineUsers);
 
 module.exports = router;
