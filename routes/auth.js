@@ -3,7 +3,7 @@ const { body } = require("express-validator");
 
 const User = require("../models/user");
 
-const authControllers = require("../controllers/auth");
+const authController = require("../controllers/auth");
 
 const s3Upload = require("../services/aws/s3").uploadImage;
 
@@ -48,13 +48,13 @@ router.post(
       .isLength({ min: 8, max: 100 })
       .withMessage("Invalid password length")
   ],
-  authControllers.signUp
+  authController.signUp
 );
 
 // POST => /auth/sign-in
-router.post("/sign-in", authControllers.signIn);
+router.post("/sign-in", authController.signIn);
 
 // GET => /auth/user
-router.get("/user", isAuth, authControllers.getUser);
+router.get("/user", isAuth, authController.getUser);
 
 module.exports = router;

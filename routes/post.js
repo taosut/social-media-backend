@@ -4,7 +4,7 @@ const slowDown = require("express-slow-down");
 
 const Post = require("../models/post");
 
-const postControllers = require("../controllers/post");
+const postController = require("../controllers/post");
 
 const s3Upload = require("../services/aws/s3").uploadImage;
 
@@ -40,7 +40,7 @@ router.post(
       .escape()
       .trim()
   ],
-  postControllers.createPost
+  postController.createPost
 );
 
 // GET => /posts/:post
@@ -52,7 +52,7 @@ router.get(
       .isMongoId()
       .trim()
   ],
-  postControllers.getPost
+  postController.getPost
 );
 
 // GET => /posts/get-post-for-update/:post
@@ -64,7 +64,7 @@ router.get(
       .isMongoId()
       .trim()
   ],
-  postControllers.getPostForUpdate
+  postController.getPostForUpdate
 );
 
 // DELETE => /posts/delete-post
@@ -76,7 +76,7 @@ router.delete(
       .isMongoId()
       .trim()
   ],
-  postControllers.deletePost
+  postController.deletePost
 );
 
 // GET => /posts
@@ -96,7 +96,7 @@ router.get(
       return true;
     })
   ],
-  postControllers.getPosts
+  postController.getPosts
 );
 
 // PATCH => /posts/update-post
@@ -124,7 +124,7 @@ router.patch(
       .isMongoId()
       .trim()
   ],
-  postControllers.updatePost
+  postController.updatePost
 );
 
 module.exports = router;

@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 require("dotenv").config();
 
+const socket = require("../socket");
+
 const deleteS3Object = require("../services/aws/s3").deleteObject;
 
 const User = require("../models/user");

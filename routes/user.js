@@ -3,7 +3,7 @@ const { body, param } = require("express-validator");
 
 const User = require("../models/user");
 
-const userControllers = require("../controllers/user");
+const userController = require("../controllers/user");
 
 const isAuth = require("../middleware/is-auth");
 
@@ -27,7 +27,7 @@ router.get(
       })
       .trim()
   ],
-  userControllers.getUserProfile
+  userController.getUserProfile
 );
 
 // GET => /users/search
@@ -46,7 +46,7 @@ router.get(
       })
       .trim()
   ],
-  userControllers.usersSearch
+  userController.usersSearch
 );
 
 // DELETE => /users/delete-account
@@ -61,7 +61,7 @@ router.delete(
       .isLength({ min: 8, max: 100 })
       .withMessage("Invalid password length")
   ],
-  userControllers.deleteAccount
+  userController.deleteAccount
 );
 
 // PATCH => /users/update-account
@@ -86,7 +86,7 @@ router.patch(
       .escape()
       .trim()
   ],
-  userControllers.updateAccount
+  userController.updateAccount
 );
 
 // PUT => /users/user/set-liked-posts
@@ -98,7 +98,7 @@ router.put(
       .isMongoId()
       .trim()
   ],
-  userControllers.setLikedPosts
+  userController.setLikedPosts
 );
 
 // PUT => /users/user/set-following
@@ -110,7 +110,7 @@ router.put(
       .isMongoId()
       .trim()
   ],
-  userControllers.setFollowing
+  userController.setFollowing
 );
 
 module.exports = router;
