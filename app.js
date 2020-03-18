@@ -4,6 +4,8 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
+const socket = require("./socket");
+
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const postRoutes = require("./routes/post");
@@ -54,5 +56,18 @@ app.use((error, req, res, next) => {
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", function() {
-  app.listen(PORT, () => console.log(`Server started at post: ${PORT}`));
+  let server = app.listen(PORT, () =>
+    console.log(`Server started at post: ${PORT}`)
+  );
+
+  let io = socket.init(server);
+
+  io.on("connection", function(socket) {
+    console.log("A user connected");
+
+    socket.on("disconnect", function() {
+      console.log("user disconnected");
+      console.log("------------------");
+    });
+  });
 });
