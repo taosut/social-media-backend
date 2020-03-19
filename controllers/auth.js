@@ -93,7 +93,7 @@ exports.signIn = async (req, res, next) => {
     );
 
     loggedUser.tokenExpiration = new Date(
-      jwt.verify(token, process.env.JWT_SECRET_KEY).exp
+      jwt.verify(token, process.env.JWT_SECRET_KEY).exp * 1000
     );
 
     await loggedUser.save();
