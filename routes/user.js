@@ -116,4 +116,11 @@ router.put(
   userController.setFollowing
 );
 
+// PATCH => /users/user/remove-token-expiration
+router.patch(
+  "/user/remove-token-expiration",
+  isAuth,
+  userController.removeTokenExpiration
+);
+
 module.exports = router;

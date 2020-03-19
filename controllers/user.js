@@ -354,7 +354,7 @@ exports.getOnlineUsers = async (req, res, next) => {
     let onlineUsers = await User.find(
       {
         _id: userAccount.following,
-        tokenExpiration: new Date()
+        tokenExpiration: { $lt: new Date() }
       },
       {
         username: 1,
@@ -366,6 +366,20 @@ exports.getOnlineUsers = async (req, res, next) => {
       messsage: "Online users successfully fetched",
       onlineUsers
     });
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
+
+    next(err);
+  }
+};
+
+exports.removeTokenExpiration = async (req, res, next) => {
+  try {
+    await User.updateOne({ _id: req.userId }, { tokenExpiration: null });
+
+    res.status(200).json("Token expiration successfull removed");
+
+    socket.getIO().emit("remove online user", req.userId);
   } catch (err) {
     if (!err.statusCode) err.statusCode = 500;
 

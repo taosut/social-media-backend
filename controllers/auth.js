@@ -98,6 +98,12 @@ exports.signIn = async (req, res, next) => {
 
     await loggedUser.save();
 
+    socket.getIO().emit("add online user", {
+      username: loggedUser.username,
+      _id: loggedUser._id,
+      profileImage: loggedUser.profileImage
+    });
+
     res.status(200).json({
       message: "User successfully logged in",
       token: token,
