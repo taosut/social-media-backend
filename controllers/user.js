@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 require("dotenv").config();
 const mongoose = require("mongoose");
 
+const socket = require("../socket");
+
 const User = require("../models/user");
 const Post = require("../models/post");
 
@@ -335,6 +337,81 @@ exports.setFollowing = async (req, res, next) => {
     });
   } catch (err) {
     if (!err.statusCode) err.statusCode = 500;
+    next(err);
+  }
+};
+
+exports.setOnlineActivity = async (req, res, next) => {
+  const isOnline = req.body.isOnline;
+
+  const errors = validationResult(req);
+
+  try {
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed");
+      error.statusCode = 406;
+      throw error;
+    }
+
+    const userAccount = await User.findById(req.userId);
+
+    if (!userAccount) {
+      const error = new Error("An error occured");
+      error.statusCode = 500;
+      throw error;
+    }
+
+    userAccount.isOnline = isOnline;
+
+    await userAccount.save();
+
+    if (isOnline) {
+      socket.getIO().emit("add online user", {
+        username: userAccount.username,
+        profileImage: userAccount.profileImage,
+        userId: userAccount._id
+      });
+    } else {
+      socket.getIO().emit("add online user", userAccount._id);
+    }
+
+    res.status(200).json({
+      message: "User online status succussfully updated"
+    });
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
+    next(err);
+  }
+};
+
+exports.getOnlineUsers = async (req, res, next) => {
+  try {
+    let userAccount = await User.findById(req.userId);
+
+    if (!userAccount) {
+      const error = new Error("An error occured");
+      error.statusCode = 500;
+      throw error;
+    }
+
+    let onlineUsers = await User.find(
+      {
+        _id: userAccount.following,
+        isOnline: true
+      },
+      {
+        username: 1,
+        profileImage: 1
+      }
+    );
+
+    res.status(200).json({
+      messsage: "Online users successfully fetched",
+      onlineUsers
+    });
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
+
     next(err);
   }
 };

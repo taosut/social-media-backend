@@ -42,6 +42,10 @@ const userSchema = new Schema(
     recentContacts: {
       type: Array,
       default: []
+    },
+    isOnline: {
+      type: Boolean,
+      default: false
     }
   },
   {

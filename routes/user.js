@@ -11,6 +11,9 @@ const s3Upload = require("../services/aws/s3").uploadImage;
 
 const router = express.Router();
 
+// GET => /users/online
+router.get("/online", isAuth, userController.getOnlineUsers);
+
 // GET => /users/:username
 router.get(
   "/:username",
@@ -111,6 +114,14 @@ router.put(
       .trim()
   ],
   userController.setFollowing
+);
+
+// PATCH => /users/user/set-online-activity
+router.patch(
+  "/user/set-online-activity",
+  isAuth,
+  [body("isOnline").isBoolean()],
+  userController.setOnlineActivity
 );
 
 module.exports = router;
