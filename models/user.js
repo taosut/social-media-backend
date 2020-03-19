@@ -43,9 +43,8 @@ const userSchema = new Schema(
       type: Array,
       default: []
     },
-    isOnline: {
-      type: Boolean,
-      default: false
+    tokenExpiration: {
+      type: Date
     }
   },
   {

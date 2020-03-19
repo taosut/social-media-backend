@@ -369,10 +369,10 @@ exports.setOnlineActivity = async (req, res, next) => {
       socket.getIO().emit("add online user", {
         username: userAccount.username,
         profileImage: userAccount.profileImage,
-        userId: userAccount._id
+        _id: userAccount._id
       });
     } else {
-      socket.getIO().emit("add online user", userAccount._id);
+      socket.getIO().emit("remove online user", userAccount._id);
     }
 
     res.status(200).json({
@@ -397,7 +397,7 @@ exports.getOnlineUsers = async (req, res, next) => {
     let onlineUsers = await User.find(
       {
         _id: userAccount.following,
-        isOnline: true
+        tokenExpiration: new Date()
       },
       {
         username: 1,

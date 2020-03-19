@@ -92,6 +92,12 @@ exports.signIn = async (req, res, next) => {
       }
     );
 
+    loggedUser.tokenExpiration = new Date(
+      jwt.verify(token, process.env.JWT_SECRET_KEY).exp
+    );
+
+    await loggedUser.save();
+
     res.status(200).json({
       message: "User successfully logged in",
       token: token,
