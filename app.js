@@ -9,7 +9,6 @@ const socket = require("./socket");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const postRoutes = require("./routes/post");
-const onlineUserRoutes = require("./routes/online-user");
 
 const app = express();
 
@@ -37,7 +36,6 @@ mongoose.connect(process.env.MONGODB_URI, {
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
-app.use("/online-users", onlineUserRoutes);
 
 app.use((req, res, next) => {
   return res.status(404).json({
