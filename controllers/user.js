@@ -354,7 +354,7 @@ exports.getOnlineUsers = async (req, res, next) => {
     let onlineUsers = await User.find(
       {
         _id: userAccount.following,
-        tokenExpiration: { $lt: new Date() }
+        tokenExpiration: { $gt: new Date() }
       },
       {
         username: 1,

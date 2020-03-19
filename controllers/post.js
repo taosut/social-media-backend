@@ -6,6 +6,8 @@ const deleteS3Object = require("../services/aws/s3").deleteObject;
 const Post = require("../models/post");
 const User = require("../models/user");
 
+const socket = require("../socket");
+
 exports.createPost = async (req, res, next) => {
   const title = req.body.title;
   const description = req.body.description;
@@ -33,10 +35,20 @@ exports.createPost = async (req, res, next) => {
 
     await newPost.save();
 
-    await User.updateOne(
-      { _id: req.userId },
-      { $push: { posts: newPost._id } }
-    );
+    let userAccount = await User.findById(req.userId);
+
+    userAccount.posts.push(newPost._id);
+
+    await userAccount.save();
+
+    socket.getIO().emit("new post created", {
+      ...newPost,
+      creator: {
+        _id: userAccount._id,
+        profileImage: userAccount.profileImage,
+        username: userAccount.username
+      }
+    });
 
     res.status(200).json({
       message: "New post successfully created",
@@ -153,6 +165,8 @@ exports.deletePost = async (req, res, next) => {
       { $pull: { likedPosts: postObjectId } }
     );
 
+    socket.getIO().emit("remove post", postId);
+
     return res.status(200).json({
       message: "Post successfully deleted"
     });
@@ -216,7 +230,10 @@ exports.updatePost = async (req, res, next) => {
       throw error;
     }
 
-    const updatePost = await Post.findById(postId);
+    const updatePost = await Post.findById(postId).populate({
+      path: "creator",
+      select: "username profileImage"
+    });
 
     if (!updatePost) {
       const error = new Error("Post not found");
@@ -224,7 +241,7 @@ exports.updatePost = async (req, res, next) => {
       throw error;
     }
 
-    if (updatePost.creator.toString() !== req.userId.toString()) {
+    if (updatePost.creator._id.toString() != req.userId.toString()) {
       return res.status(401).json({
         message: "Action is forbidden"
       });
@@ -243,6 +260,8 @@ exports.updatePost = async (req, res, next) => {
     }
 
     await updatePost.save();
+
+    socket.getIO().emit("update post", updatePost);
 
     res.status(200).json({
       message: "Post successfully updated",
