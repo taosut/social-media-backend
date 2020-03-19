@@ -116,12 +116,4 @@ router.put(
   userController.setFollowing
 );
 
-// PATCH => /users/user/set-online-activity
-router.patch(
-  "/user/set-online-activity",
-  isAuth,
-  [body("isOnline").isBoolean()],
-  userController.setOnlineActivity
-);
-
 module.exports = router;
