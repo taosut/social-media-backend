@@ -24,15 +24,7 @@ const postSchema = new Schema(
         required: true
       }
     },
-    comments: {
-      type: Array,
-      required: true,
-      comment: { type: Schema.Types.ObjectId, ref: "Comment" }
-    },
-    commentsNumber: {
-      type: Number,
-      default: 0
-    },
+    comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     likes: {
       type: Number,
       default: 0
