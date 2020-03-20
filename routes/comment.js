@@ -23,4 +23,16 @@ router.post(
   commentController.createComment
 );
 
+// DELETE => /comments/delete-comment
+router.delete(
+  "/delete-comment",
+  isAuth,
+  [
+    body("commentId")
+      .isMongoId()
+      .trim()
+  ],
+  commentController.deleteComment
+);
+
 module.exports = router;
