@@ -17,6 +17,7 @@ app.enable("trust proxy");
 
 app.use(bodyParser.json());
 
+// CORS(Cross-Origin-Resource-Sharing)
 const corsOptions = {
   origin: "http://localhost:3000",
   optionsSuccessStatus: 200
@@ -34,17 +35,20 @@ mongoose.connect(process.env.MONGODB_URI, {
   useUnifiedTopology: true
 });
 
+// ROUTES
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
 app.use("/comments", commentRoutes);
 
+// HANDLING 404 ROUTES
 app.use((req, res, next) => {
   return res.status(404).json({
     message: "Route not found"
   });
 });
 
+// HANDLING ERRORS/EXCEPTIONS
 app.use((error, req, res, next) => {
   console.log(error);
   if (!error.statusCode) error.statusCode = 500;
@@ -61,15 +65,6 @@ db.once("open", function() {
   let server = app.listen(PORT, () =>
     console.log(`Server started at post: ${PORT}`)
   );
-
+  
   let io = socket.init(server);
-
-  io.on("connection", function(socket) {
-    console.log("A user connected");
-
-    socket.on("disconnect", function() {
-      console.log("user disconnected");
-      console.log("------------------");
-    });
-  });
 });

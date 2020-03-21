@@ -16,7 +16,7 @@ router.post(
       .isMongoId()
       .trim(),
     body("text")
-      .isLength({ min: 2, max: 2000 })
+      .isLength({ min: 1, max: 2000 })
       .escape()
       .trim()
   ],
