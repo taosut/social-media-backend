@@ -10,6 +10,9 @@ const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const postRoutes = require("./routes/post");
 const commentRoutes = require("./routes/comment");
+const messageRoutes = require("./routes/message");
+
+const chatController = require("./controllers/chat");
 
 const app = express();
 
@@ -40,6 +43,7 @@ app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/posts", postRoutes);
 app.use("/comments", commentRoutes);
+app.use("/messages", messageRoutes);
 
 // HANDLING 404 ROUTES
 app.use((req, res, next) => {
@@ -65,6 +69,8 @@ db.once("open", function() {
   let server = app.listen(PORT, () =>
     console.log(`Server started at post: ${PORT}`)
   );
-  
+
   let io = socket.init(server);
+
+  chatController(io);
 });
