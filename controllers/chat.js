@@ -1,3 +1,5 @@
+const Message = require("../models/message");
+
 module.exports = function(io) {
   const chatNsp = io.of("/chat");
 
@@ -11,8 +13,15 @@ module.exports = function(io) {
 
     socket.join(roomName);
 
-    socket.on("new message", message => {
-      console.log(message);
+    socket.on("new message", async message => {
+      const newMessage = new Message({
+        message: message.message,
+        to: message.to,
+        from: message.from,
+        createdAt: message.createdAt
+      });
+
+      await newMessage.save();
 
       const roomName = createChatRoomName(
         message.from.username,
