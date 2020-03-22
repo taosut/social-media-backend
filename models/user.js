@@ -39,10 +39,10 @@ const userSchema = new Schema(
     likedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     taggedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
-    recentContacts: {
-      type: Array,
-      default: []
-    },
+    // recentContacts: {
+    //   type: Array,
+    //   default: []
+    // },
     tokenExpiration: {
       type: Date
     }

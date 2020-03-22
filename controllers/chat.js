@@ -1,11 +1,24 @@
 const Message = require("../models/message");
 
 module.exports = function(io) {
+  let users = {};
+  // REMEMBER USER SOCKET BY USERNAME
+  io.on("connection", socket => {
+    users[socket.handshake.query.username] = socket;
+
+    socket.on("disconnect", () => {
+      for (username in users) {
+        if (users[username] === socket.id) {
+          console.log("true, remove this socket");
+        }
+      }
+    });
+  });
+
   const chatNsp = io.of("/chat");
 
   chatNsp.on("connection", socket => {
-    console.log("new chat connection");
-
+    // CREATE UNIQUE CHAT ROOM
     let roomName = createChatRoomName(
       socket.handshake.query.user1,
       socket.handshake.query.user2
@@ -14,6 +27,13 @@ module.exports = function(io) {
     socket.join(roomName);
 
     socket.on("new message", async message => {
+      let numberOfUsersInRoom;
+      chatNsp.in(roomName).clients((error, clients) => {
+        if (error) console.log(error);
+        numberOfUsersInRoom = clients.length;
+      });
+
+      // Validate message
       const messageTypeValidation = Boolean(
         typeof message.message === "string"
       );
@@ -27,6 +47,7 @@ module.exports = function(io) {
         messageLengthValidation &&
         messageTypeValidation
       ) {
+        // Create and save message in database
         const newMessage = new Message({
           message: message.message,
           to: message.to,
@@ -36,16 +57,20 @@ module.exports = function(io) {
 
         await newMessage.save();
 
-        const roomName = createChatRoomName(message.from, message.to);
-
-        socket.broadcast.to(roomName).emit("new message", message);
+        // Check if both users are in chatroom
+        if (numberOfUsersInRoom !== 2) {
+          // Send notification
+          if (users[message.to])
+            users[message.to].emit("chat notification", message.from);
+        } else {
+          const roomName = createChatRoomName(message.from, message.to);
+          // Send private message to room
+          socket.broadcast.to(roomName).emit("new message", message);
+        }
       }
-      console.log(message);
     });
 
-    socket.on("disconnect", () => {
-      console.log("user left");
-    });
+    socket.on("disconnect", () => {});
   });
 };
 
