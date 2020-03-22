@@ -14,21 +14,33 @@ module.exports = function(io) {
     socket.join(roomName);
 
     socket.on("new message", async message => {
-      const newMessage = new Message({
-        message: message.message,
-        to: message.to,
-        from: message.from,
-        createdAt: message.createdAt
-      });
-
-      await newMessage.save();
-
-      const roomName = createChatRoomName(
-        message.from.username,
-        message.to.username
+      const messageTypeValidation = Boolean(
+        typeof message.message === "string"
       );
+      const messageLengthValidation =
+        Boolean(message.message.length < 2000) &&
+        Boolean(message.message.length);
 
-      socket.broadcast.to(roomName).emit("new message", message);
+      if (
+        usernameValidation(message.to) &&
+        usernameValidation(message.from) &&
+        messageLengthValidation &&
+        messageTypeValidation
+      ) {
+        const newMessage = new Message({
+          message: message.message,
+          to: message.to,
+          from: message.from,
+          createdAt: message.createdAt || new Date()
+        });
+
+        await newMessage.save();
+
+        const roomName = createChatRoomName(message.from, message.to);
+
+        socket.broadcast.to(roomName).emit("new message", message);
+      }
+      console.log(message);
     });
 
     socket.on("disconnect", () => {
@@ -36,6 +48,16 @@ module.exports = function(io) {
     });
   });
 };
+
+function usernameValidation(username) {
+  // Type validation
+  if (typeof username !== "string") return false;
+  // Length validation
+  if (username.length < 2 || username.length > 32) return false;
+  // Characters validation
+  if (!/^[\w\.\-\_]{2,32}$/.test(username)) return false;
+  return true;
+}
 
 function createChatRoomName(username1, username2) {
   let roomName = username1;

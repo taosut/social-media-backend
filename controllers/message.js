@@ -3,8 +3,6 @@ const { validationResult } = require("express-validator");
 const Message = require("../models/message");
 const User = require("../models/user");
 
-const socket = require("../socket");
-
 exports.getMessages = async (req, res, next) => {
   const username1 = req.query.username1;
   const username2 = req.query.username2;
@@ -36,8 +34,8 @@ exports.getMessages = async (req, res, next) => {
 
     const messages = await Message.find({
       $or: [
-        { "from.username": username1, "to.username": username2 },
-        { "from.username": username2, "to.username": username1 }
+        { from: username1, to: username2 },
+        { from: username2, to: username1 }
       ]
     });
 
