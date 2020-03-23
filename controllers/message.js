@@ -32,11 +32,23 @@ exports.getMessages = async (req, res, next) => {
       });
     }
 
-    const messages = await Message.find({
+    let messages = await Message.find({
       $or: [
         { from: username1, to: username2 },
         { from: username2, to: username1 }
       ]
+    })
+      .sort({ _id: -1 })
+      .limit(32);
+
+    messages = messages.sort((msg1, msg2) => {
+      if (msg1._id < msg2._id) {
+        return -1;
+      } else if (msg1._id > msg2._id) {
+        return 1;
+      } else {
+        return 0;
+      }
     });
 
     res.status(200).json({

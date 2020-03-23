@@ -76,7 +76,7 @@ module.exports = function(io) {
 
           // Send notification
           if (users[message.to])
-            users[message.to].emit("chat notification", message.from);
+            users[message.to].emit("chat notification", notification);
         } else {
           const roomName = createChatRoomName(message.from, message.to);
           // Send private message to room
