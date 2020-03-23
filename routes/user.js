@@ -33,7 +33,7 @@ router.get(
   userController.getUserProfile
 );
 
-// GET => /users/search
+// GET => /users/search/:username
 router.get(
   "/search/:username",
   isAuth,

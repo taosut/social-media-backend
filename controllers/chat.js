@@ -1,4 +1,5 @@
 const Message = require("../models/message");
+const User = require("../models/user");
 
 module.exports = function(io) {
   let users = {};
@@ -59,6 +60,20 @@ module.exports = function(io) {
 
         // Check if both users are in chatroom
         if (numberOfUsersInRoom !== 2) {
+          // Save notification
+          const notification = {
+            type: "message",
+            number: 1,
+            from: message.from
+          };
+
+          const messageReceiver = await User.findOne(
+            { username: message.to },
+            { notifications: 1 }
+          );
+
+          await messageReceiver.addNotification(notification);
+
           // Send notification
           if (users[message.to])
             users[message.to].emit("chat notification", message.from);

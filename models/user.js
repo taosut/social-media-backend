@@ -45,7 +45,19 @@ const userSchema = new Schema(
     // },
     tokenExpiration: {
       type: Date
-    }
+    },
+    notifications: [
+      {
+        type: Object,
+        type: { type: String },
+        from: {
+          type: String
+        },
+        number: {
+          type: Number
+        }
+      }
+    ]
   },
   {
     timestamps: true
@@ -85,6 +97,25 @@ userSchema.methods.setFollowing = function(userId) {
   }
 
   this.following = following;
+
+  return this.save();
+};
+
+userSchema.methods.addNotification = function(newNotification) {
+  let notifications = this.notifications;
+  let sameNotificationIndex = notifications.findIndex(
+    notification =>
+      notification.from === newNotification.from &&
+      notification.type === newNotification.type
+  );
+
+  if (sameNotificationIndex !== -1) {
+    notifications[sameNotificationIndex].number++;
+  } else {
+    notifications.push(newNotification);
+  }
+
+  this.notifications = notifications;
 
   return this.save();
 };

@@ -45,7 +45,8 @@ exports.signUp = async (req, res, next) => {
       posts: [],
       taggedPosts: [],
       fallowers: [],
-      fallowing: []
+      fallowing: [],
+      notifications: []
     });
 
     await newUser.save();
