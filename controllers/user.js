@@ -386,3 +386,29 @@ exports.removeTokenExpiration = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.removeNotification = async (req, res, next) => {
+  const username = req.body.username;
+  const type = req.body.type;
+
+  const errors = validationResult(req);
+
+  try {
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed");
+      error.statusCode = 406;
+      throw error;
+    }
+
+    await User.updateOne(
+      { _id: req.userId },
+      { $pull: { notifications: { type: type, from: username } } }
+    );
+
+    res.status(200).json("Notification successfully removed");
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
+
+    next(err);
+  }
+};

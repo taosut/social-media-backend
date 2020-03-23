@@ -123,4 +123,27 @@ router.patch(
   userController.removeTokenExpiration
 );
 
+// DELETE => /users/user/remove-notification
+router.delete(
+  "/user/remove-notification",
+  isAuth,
+  [
+    body("username")
+      .isString()
+      .isLength({ min: 2, max: 32 })
+      .custom(value => {
+        const regEx = /^[\w\.\-\_]{2,32}$/;
+
+        if (!regEx.test(value)) throw new Error("Character validation failed");
+
+        return true;
+      })
+      .trim(),
+    body("type")
+      .isString()
+      .trim()
+  ],
+  userController.removeNotification
+);
+
 module.exports = router;
