@@ -37,7 +37,13 @@ router.post(
     body("description")
       .isString()
       .isLength({ min: 0, max: 2200 })
-      .escape()
+      .custom(value => {
+        const regEx = /^[\w\s\.\,\?\!\'\"\;\:\(\)]*$/g;
+
+        if (!regEx.test(value)) throw new Error("Character validation failed");
+
+        return true;
+      })
       .trim()
   ],
   postController.createPost
@@ -118,7 +124,13 @@ router.patch(
     body("description")
       .isString()
       .isLength({ min: 0, max: 2200 })
-      .escape()
+      .custom(value => {
+        const regEx = /^[\w\s\.\,\?\!\'\"\;\:\(\)]*$/g;
+
+        if (!regEx.test(value)) throw new Error("Character validation failed");
+
+        return true;
+      })
       .trim(),
     body("postId")
       .isMongoId()

@@ -42,7 +42,13 @@ router.post(
       .normalizeEmail(),
     body("description")
       .isLength({ min: 0, max: 150 })
-      .escape()
+      .custom(value => {
+        const regEx = /^[\w\s\.\,\?\!\'\"\;\:\(\)]*$/g;
+
+        if (!regEx.test(value)) throw new Error("Character validation failed");
+
+        return true;
+      })
       .trim(),
     body("password")
       .isLength({ min: 8, max: 100 })
