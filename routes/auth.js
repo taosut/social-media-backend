@@ -60,6 +60,9 @@ router.post(
 // POST => /auth/sign-in
 router.post("/sign-in", authController.signIn);
 
+// POST => /auth/refresh-token
+router.post("/refresh-token", authController.refreshToken);
+
 // GET => /auth/user
 router.get("/user", isAuth, authController.getUser);
 

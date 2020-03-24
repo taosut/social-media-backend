@@ -46,7 +46,8 @@ exports.signUp = async (req, res, next) => {
       taggedPosts: [],
       fallowers: [],
       fallowing: [],
-      notifications: []
+      notifications: [],
+      refreshTokens: []
     });
 
     await newUser.save();
@@ -81,19 +82,16 @@ exports.signIn = async (req, res, next) => {
       return res.status(401).json({ message: "Invalid Email/Password" });
     }
 
-    const token = jwt.sign(
-      {
-        _id: loggedUser._id,
-        email: loggedUser.email,
-        username: loggedUser.username
-      },
-      process.env.JWT_SECRET_KEY,
-      {
-        expiresIn: "1h"
-      }
+    const token = createJWT(loggedUser, process.env.JWT_ACCESS_TOKEN_SECRET);
+    const refreshToken = createJWT(
+      loggedUser,
+      process.env.JWT_REFRESH_TOKEN_SECRET,
+      "7d"
     );
 
+    // CREATE NEW LOGIC FOR HANDLING ONLINE USERS...
     loggedUser.tokenExpiration = new Date(Date.now() + 3600000);
+    loggedUser.refreshTokens.push(refreshToken);
 
     await loggedUser.save();
 
@@ -106,10 +104,13 @@ exports.signIn = async (req, res, next) => {
     res.status(200).json({
       message: "User successfully logged in",
       token: token,
-      tokenExpiration: jwt.verify(token, process.env.JWT_SECRET_KEY).exp,
+      refreshToken: refreshToken,
       user: loggedUser
     });
-  } catch (err) {}
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
+    next(err);
+  }
 };
 
 exports.getUser = async (req, res, next) => {
@@ -143,3 +144,64 @@ exports.getUser = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.refreshToken = async (req, res, next) => {
+  let refreshToken = req.body.refreshToken;
+
+  try {
+    const user = await jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_TOKEN_SECRET
+    );
+
+    if (!user) {
+      const error = new Error("Authentication failed");
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const userAccount = await User.findById(user._id, { refreshTokens: 1 });
+
+    if (!userAccount) {
+      const error = new Error("Authentication failed");
+      error.statusCode = 403;
+      throw error;
+    }
+
+    userAccount.refreshTokens = userAccount.refreshTokens.filter(
+      token => token !== refreshToken
+    );
+
+    refreshToken = createJWT(
+      { _id: user._id, username: user.username },
+      process.env.JWT_REFRESH_TOKEN_SECRET,
+      "7d"
+    );
+    const token = createJWT(
+      { _id: user._id, username: user.username },
+      process.env.JWT_ACCESS_TOKEN_SECRET
+    );
+
+    res.status(200).json({
+      message: "Token successfully refreshed",
+      refreshToken,
+      token
+    });
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
+    next(err);
+  }
+};
+
+function createJWT(user, secret, expiresIn = 900) {
+  return jwt.sign(
+    {
+      _id: user._id,
+      username: user.username
+    },
+    secret,
+    {
+      expiresIn: expiresIn
+    }
+  );
+}
