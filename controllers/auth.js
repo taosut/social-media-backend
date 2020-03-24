@@ -104,8 +104,7 @@ exports.signIn = async (req, res, next) => {
     res.status(200).json({
       message: "User successfully logged in",
       token: token,
-      refreshToken: refreshToken,
-      user: loggedUser
+      refreshToken: refreshToken
     });
   } catch (err) {
     if (!err.statusCode) err.statusCode = 500;
@@ -167,7 +166,7 @@ exports.refreshToken = async (req, res, next) => {
       error.statusCode = 403;
       throw error;
     }
-
+    // Remove refresh token from white-list
     userAccount.refreshTokens = userAccount.refreshTokens.filter(
       token => token !== refreshToken
     );
@@ -181,12 +180,52 @@ exports.refreshToken = async (req, res, next) => {
       { _id: user._id, username: user.username },
       process.env.JWT_ACCESS_TOKEN_SECRET
     );
+    // Add newly generated refresh token to white-list
+    userAccount.refreshTokens.push(refreshToken);
+
+    await userAccount.save();
 
     res.status(200).json({
       message: "Token successfully refreshed",
       refreshToken,
       token
     });
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 500;
+    next(err);
+  }
+};
+
+exports.logout = async (req, res, next) => {
+  let refreshToken = req.body.refreshToken;
+
+  try {
+    const user = await jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_TOKEN_SECRET
+    );
+
+    if (!user) {
+      const error = new Error("Authentication failed");
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const userAccount = await User.findById(user._id, { refreshTokens: 1 });
+
+    if (!userAccount) {
+      const error = new Error("Authentication failed");
+      error.statusCode = 403;
+      throw error;
+    }
+
+    userAccount.refreshTokens = userAccount.refreshTokens.filter(
+      token => token !== refreshToken
+    );
+
+    await userAccount.save();
+
+    res.sendStatus(204);
   } catch (err) {
     if (!err.statusCode) err.statusCode = 500;
     next(err);
