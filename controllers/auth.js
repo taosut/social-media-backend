@@ -244,7 +244,7 @@ exports.logout = async (req, res, next) => {
     );
 
     await userAccount.save();
-    socket.getIO().emit("remove online user", req.userId);
+
     res.sendStatus(204);
   } catch (err) {
     if (!err.statusCode) err.statusCode = 500;
@@ -252,7 +252,7 @@ exports.logout = async (req, res, next) => {
   }
 };
 
-function createJWT(user, secret, expiresIn = 900) {
+function createJWT(user, secret, expiresIn = 1800) {
   return jwt.sign(
     {
       _id: user._id,
