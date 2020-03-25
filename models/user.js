@@ -39,7 +39,16 @@ const userSchema = new Schema(
     likedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     taggedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
-    refreshTokens: [{ type: String }],
+    refreshTokens: [
+      {
+        type: Object,
+        expiresAt: { type: Date, required: true },
+        refreshToken: {
+          type: String,
+          required: true
+        }
+      }
+    ],
     tokenExpiration: {
       type: Date
     },

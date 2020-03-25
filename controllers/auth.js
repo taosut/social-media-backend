@@ -86,12 +86,18 @@ exports.signIn = async (req, res, next) => {
     const refreshToken = createJWT(
       loggedUser,
       process.env.JWT_REFRESH_TOKEN_SECRET,
-      "7d"
+      '7d'
     );
+
+    const refresheTokenExpiresAt =
+      jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET).exp * 1000;
 
     // CREATE NEW LOGIC FOR HANDLING ONLINE USERS...
     loggedUser.tokenExpiration = new Date(Date.now() + 3600000);
-    loggedUser.refreshTokens.push(refreshToken);
+    loggedUser.refreshTokens.push({
+      expiresAt: new Date(refresheTokenExpiresAt),
+      refreshToken
+    });
 
     await loggedUser.save();
 
@@ -167,14 +173,16 @@ exports.refreshToken = async (req, res, next) => {
       throw error;
     }
 
-    if (!userAccount.refreshTokens.includes(refreshToken)) {
+    if (
+      !userAccount.refreshTokens.some(obj => obj.refreshToken === refreshToken)
+    ) {
       const error = new Error("Authentication failed");
       error.statusCode = 403;
       throw error;
     }
 
     userAccount.refreshTokens = userAccount.refreshTokens.filter(
-      token => token !== refreshToken
+      obj => obj.refreshToken !== refreshToken && obj.expiresAt > new Date()
     );
 
     const token = createJWT(
@@ -184,10 +192,16 @@ exports.refreshToken = async (req, res, next) => {
     refreshToken = createJWT(
       { _id: user._id, username: user.username },
       process.env.JWT_REFRESH_TOKEN_SECRET,
-      "7d"
+      '7d'
     );
 
-    userAccount.refreshTokens.push(refreshToken);
+    const refresheTokenExpiresAt =
+      jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET).exp * 1000;
+
+    userAccount.refreshTokens.push({
+      expiresAt: new Date(refresheTokenExpiresAt),
+      refreshToken
+    });
 
     await userAccount.save();
 
@@ -226,7 +240,7 @@ exports.logout = async (req, res, next) => {
     }
 
     userAccount.refreshTokens = userAccount.refreshTokens.filter(
-      token => token !== refreshToken
+      obj => obj.refreshToken !== refreshToken
     );
 
     await userAccount.save();
