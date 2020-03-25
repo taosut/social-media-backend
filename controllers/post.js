@@ -42,7 +42,7 @@ exports.createPost = async (req, res, next) => {
     await userAccount.save();
 
     socket.getIO().emit("new post created", {
-      ...newPost,
+      ...newPost._doc,
       creator: {
         _id: userAccount._id,
         profileImage: userAccount.profileImage,
@@ -67,6 +67,7 @@ exports.createPost = async (req, res, next) => {
 
 exports.getPost = async (req, res, next) => {
   const postId = req.params.post;
+  const isForUpdate = Boolean(req.query.isForUpdate) || false;
 
   const errors = validationResult(req);
 
@@ -77,41 +78,19 @@ exports.getPost = async (req, res, next) => {
       throw error;
     }
 
-    const thePost = await Post.findById(postId)
-      .populate({ path: "creator", select: "username profileImage" })
-      .populate("comments");
+    let thePost;
 
-    if (!thePost) return res.status(404).json({ message: "Post not found" });
-
-    await User.updateOne({ _id: req.userId }, { lastTimeActive: new Date() });
-
-    return res.status(200).json({
-      message: "Post successfully fetched",
-      post: thePost
-    });
-  } catch (err) {
-    if (!err.statusCode) err.statusCode = 500;
-    next(err);
-  }
-};
-
-exports.getPostForUpdate = async (req, res, next) => {
-  const postId = req.params.post;
-
-  const errors = validationResult(req);
-
-  try {
-    if (!errors.isEmpty()) {
-      const error = new Error("Validation failed");
-      error.statusCode = 406;
-      throw error;
+    if (isForUpdate) {
+      thePost = await Post.findById(postId, {
+        title: 1,
+        description: 1,
+        image: 1
+      });
+    } else {
+      thePost = await Post.findById(postId)
+        .populate({ path: "creator", select: "username profileImage" })
+        .populate("comments");
     }
-
-    const thePost = await Post.findById(postId, {
-      title: 1,
-      description: 1,
-      image: 1
-    });
 
     if (!thePost) return res.status(404).json({ message: "Post not found" });
 

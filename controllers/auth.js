@@ -204,7 +204,7 @@ exports.refreshToken = async (req, res, next) => {
     user.lastTimeActive = new Date();
 
     await userAccount.save();
-    console.log(new Date());
+
     res.status(200).json({
       message: "Token successfully refreshed",
       accessToken: token,

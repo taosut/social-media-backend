@@ -56,21 +56,15 @@ router.get(
   [
     param("post")
       .isMongoId()
-      .trim()
+      .trim(),
+    query("isForUpdate").custom(value => {
+      if (value && value !== "true") {
+        throw new Error("Validation failed");
+      }
+      return true;
+    })
   ],
   postController.getPost
-);
-
-// GET => /posts/get-post-for-update/:post
-router.get(
-  "/get-post-for-update/:post",
-  isAuth,
-  [
-    param("post")
-      .isMongoId()
-      .trim()
-  ],
-  postController.getPostForUpdate
 );
 
 // DELETE => /posts/delete-post
