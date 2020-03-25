@@ -49,7 +49,7 @@ const userSchema = new Schema(
         }
       }
     ],
-    tokenExpiration: {
+    lastTimeActive: {
       type: Date
     },
     notifications: [
@@ -85,6 +85,7 @@ userSchema.methods.setLikedPosts = function(postId) {
   }
 
   this.likedPosts = likedPosts;
+  this.lastTimeActive = new Date();
   return this.save();
 };
 
@@ -103,7 +104,7 @@ userSchema.methods.setFollowing = function(userId) {
   }
 
   this.following = following;
-
+  this.lastTimeActive = new Date();
   return this.save();
 };
 

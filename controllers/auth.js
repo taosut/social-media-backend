@@ -86,14 +86,13 @@ exports.signIn = async (req, res, next) => {
     const refreshToken = createJWT(
       loggedUser,
       process.env.JWT_REFRESH_TOKEN_SECRET,
-      '7d'
+      "7d"
     );
 
     const refresheTokenExpiresAt =
       jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET).exp * 1000;
 
-    // CREATE NEW LOGIC FOR HANDLING ONLINE USERS...
-    loggedUser.tokenExpiration = new Date(Date.now() + 3600000);
+    loggedUser.lastTimeActive = new Date();
     loggedUser.refreshTokens.push({
       expiresAt: new Date(refresheTokenExpiresAt),
       refreshToken
@@ -192,7 +191,7 @@ exports.refreshToken = async (req, res, next) => {
     refreshToken = createJWT(
       { _id: user._id, username: user.username },
       process.env.JWT_REFRESH_TOKEN_SECRET,
-      '7d'
+      "7d"
     );
 
     const refresheTokenExpiresAt =
@@ -202,9 +201,10 @@ exports.refreshToken = async (req, res, next) => {
       expiresAt: new Date(refresheTokenExpiresAt),
       refreshToken
     });
+    user.lastTimeActive = new Date();
 
     await userAccount.save();
-
+    console.log(new Date());
     res.status(200).json({
       message: "Token successfully refreshed",
       accessToken: token,
@@ -244,7 +244,7 @@ exports.logout = async (req, res, next) => {
     );
 
     await userAccount.save();
-
+    socket.getIO().emit("remove online user", req.userId);
     res.sendStatus(204);
   } catch (err) {
     if (!err.statusCode) err.statusCode = 500;

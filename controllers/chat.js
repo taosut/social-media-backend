@@ -28,6 +28,11 @@ module.exports = function(io) {
     socket.join(roomName);
 
     socket.on("new message", async message => {
+      await User.updateOne(
+        { username: message.from },
+        { lastTimeActive: new Date() }
+      );
+
       let numberOfUsersInRoom;
       chatNsp.in(roomName).clients((error, clients) => {
         if (error) console.log(error);

@@ -28,9 +28,10 @@ exports.createComment = async (req, res, next) => {
         profileImage: creator.profileImage.location
       }
     });
+    creator.lastTimeActive = new Date();
 
     await newComment.save();
-
+    await creator.save();
     await Post.updateOne(
       { _id: postId },
       { $push: { comments: newComment._id } }
@@ -71,7 +72,7 @@ exports.deleteComment = async (req, res, next) => {
     }
 
     await Comment.deleteOne({ _id: comment._id });
-
+    await User.updateOne({ _id: req.userId }, { lastTimeActive: new Date() });
     await Post.updateOne(
       { _id: comment.postId },
       { $pull: { comments: comment._id } }

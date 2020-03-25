@@ -68,6 +68,8 @@ exports.usersSearch = async (req, res, next) => {
       throw error;
     }
 
+    await User.updateOne({ _id: req.userId }, { lastTimeActive: new Date() });
+
     res.status(200).json({
       message: "User successfully fetched",
       users: users
@@ -240,6 +242,8 @@ exports.updateAccount = async (req, res, next) => {
       };
     }
 
+    userAccount.lastTimeActive = new Date();
+
     await userAccount.save();
 
     res.status(200).json({
@@ -351,10 +355,12 @@ exports.getOnlineUsers = async (req, res, next) => {
       throw error;
     }
 
+    const time = Date.now() - 5 * 60 * 1000;
+    
     let onlineUsers = await User.find(
       {
         _id: userAccount.following,
-        tokenExpiration: { $gt: new Date() }
+        lastTimeActive: { $gt: new Date(time) }
       },
       {
         username: 1,
@@ -362,24 +368,13 @@ exports.getOnlineUsers = async (req, res, next) => {
       }
     );
 
+    userAccount.lastTimeActive = new Date();
+    await userAccount.save();
+
     res.status(200).json({
       messsage: "Online users successfully fetched",
       onlineUsers
     });
-  } catch (err) {
-    if (!err.statusCode) err.statusCode = 500;
-
-    next(err);
-  }
-};
-
-exports.removeTokenExpiration = async (req, res, next) => {
-  try {
-    await User.updateOne({ _id: req.userId }, { tokenExpiration: null });
-
-    res.status(200).json("Token expiration successfull removed");
-
-    socket.getIO().emit("remove online user", req.userId);
   } catch (err) {
     if (!err.statusCode) err.statusCode = 500;
 

@@ -51,6 +51,11 @@ exports.getMessages = async (req, res, next) => {
       }
     });
 
+    await User.updateOne(
+      { _id: req.userId },
+      { lastTimeActive: new Date() }
+    );
+
     res.status(200).json({
       message: "Messages successfully fetched",
       messages: messages

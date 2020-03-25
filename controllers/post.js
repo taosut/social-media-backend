@@ -38,7 +38,7 @@ exports.createPost = async (req, res, next) => {
     let userAccount = await User.findById(req.userId);
 
     userAccount.posts.push(newPost._id);
-
+    userAccount.lastTimeActive = new Date();
     await userAccount.save();
 
     socket.getIO().emit("new post created", {
@@ -83,6 +83,8 @@ exports.getPost = async (req, res, next) => {
 
     if (!thePost) return res.status(404).json({ message: "Post not found" });
 
+    await User.updateOne({ _id: req.userId }, { lastTimeActive: new Date() });
+
     return res.status(200).json({
       message: "Post successfully fetched",
       post: thePost
@@ -112,6 +114,8 @@ exports.getPostForUpdate = async (req, res, next) => {
     });
 
     if (!thePost) return res.status(404).json({ message: "Post not found" });
+
+    await User.updateOne({ _id: req.userId }, { lastTimeActive: new Date() });
 
     return res.status(200).json({
       message: "Post successfully fetched",
@@ -150,7 +154,8 @@ exports.deletePost = async (req, res, next) => {
     await User.updateOne(
       { _id: req.userId },
       {
-        $pull: { posts: postObjectId }
+        $pull: { posts: postObjectId },
+        lastTimeActive: new Date()
       }
     );
 
@@ -192,6 +197,8 @@ exports.getPosts = async (req, res, next) => {
     }
 
     const loggedUser = await User.findById(req.userId, "following");
+    loggedUser.lastTimeActive = new Date();
+    await loggedUser.save();
 
     if (!loggedUser.following.length)
       return res.status(200).json({
@@ -260,6 +267,8 @@ exports.updatePost = async (req, res, next) => {
     }
 
     await updatePost.save();
+
+    await User.updateOne({ _id: req.userId }, { lastTimeActive: new Date() });
 
     socket.getIO().emit("update post", updatePost);
 

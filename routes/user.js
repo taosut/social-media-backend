@@ -122,13 +122,6 @@ router.put(
   userController.setFollowing
 );
 
-// PATCH => /users/user/remove-token-expiration
-router.patch(
-  "/user/remove-token-expiration",
-  isAuth,
-  userController.removeTokenExpiration
-);
-
 // DELETE => /users/user/remove-notification
 router.delete(
   "/user/remove-notification",
