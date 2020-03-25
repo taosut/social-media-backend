@@ -5,6 +5,7 @@ const deleteS3Object = require("../services/aws/s3").deleteObject;
 
 const Post = require("../models/post");
 const User = require("../models/user");
+const Comment = require("../models/comment");
 
 const socket = require("../socket");
 
@@ -142,6 +143,7 @@ exports.deletePost = async (req, res, next) => {
     deleteS3Object(process.env.AWS_BUCKET_NAME, deletePost.image.key);
 
     // DELETE POST COMMENTS
+    await Comment.deleteMany({ _id: deletePost.comments });
 
     // REMOVE POST FROM USER LIKED POSTS
     await User.updateMany(
