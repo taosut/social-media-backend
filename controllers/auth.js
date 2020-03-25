@@ -103,7 +103,7 @@ exports.signIn = async (req, res, next) => {
 
     res.status(200).json({
       message: "User successfully logged in",
-      token: token,
+      accessToken: token,
       refreshToken: refreshToken
     });
   } catch (err) {
@@ -166,29 +166,35 @@ exports.refreshToken = async (req, res, next) => {
       error.statusCode = 403;
       throw error;
     }
-    // Remove refresh token from white-list
+
+    if (!userAccount.refreshTokens.includes(refreshToken)) {
+      const error = new Error("Authentication failed");
+      error.statusCode = 403;
+      throw error;
+    }
+
     userAccount.refreshTokens = userAccount.refreshTokens.filter(
       token => token !== refreshToken
     );
 
+    const token = createJWT(
+      { _id: user._id, username: user.username },
+      process.env.JWT_ACCESS_TOKEN_SECRET
+    );
     refreshToken = createJWT(
       { _id: user._id, username: user.username },
       process.env.JWT_REFRESH_TOKEN_SECRET,
       "7d"
     );
-    const token = createJWT(
-      { _id: user._id, username: user.username },
-      process.env.JWT_ACCESS_TOKEN_SECRET
-    );
-    // Add newly generated refresh token to white-list
+
     userAccount.refreshTokens.push(refreshToken);
 
     await userAccount.save();
 
     res.status(200).json({
       message: "Token successfully refreshed",
-      refreshToken,
-      token
+      accessToken: token,
+      refreshToken
     });
   } catch (err) {
     if (!err.statusCode) err.statusCode = 500;

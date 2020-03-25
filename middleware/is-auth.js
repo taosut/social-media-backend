@@ -2,16 +2,16 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 module.exports = (req, res, next) => {
-  const authHeader = req.get("Authentication failed");
+  const authHeader = req.get("Authorization");
   if (!authHeader) {
-    const err = new Error("Authentication failed");
+    const err = new Error("Authorization failed");
     err.statusCode = 401;
     return next(err);
   }
 
   const token = authHeader.split(" ")[1];
   if (!token) {
-    const err = new Error("Authentication failed");
+    const err = new Error("Authorization failed");
     err.statusCode = 401;
     return next(err);
   }
@@ -26,7 +26,7 @@ module.exports = (req, res, next) => {
   }
 
   if (!decodedToken) {
-    const err = new Error("Authentication failed");
+    const err = new Error("Authorization failed");
     err.statusCode = 401;
     return next(err);
   }
