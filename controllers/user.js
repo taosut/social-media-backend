@@ -210,6 +210,14 @@ exports.updateAccount = async (req, res, next) => {
       error.statusCode = 500;
       throw error;
     }
+
+    let commentCreator = {
+      username: userAccount.username,
+      profileImage: userAccount.profileImage.location
+    };
+
+    let userBeforeUpdate = Object.assign({}, userAccount._doc);
+
     // USERNAME CHECK & CHANGE
     if (userAccount.username !== username) {
       let usernameExist = await User.findOne({
@@ -223,6 +231,7 @@ exports.updateAccount = async (req, res, next) => {
       }
 
       userAccount.username = username;
+      commentCreator.username = username;
     }
 
     // DESCRIPTION CHECK & CHANGE
@@ -260,11 +269,29 @@ exports.updateAccount = async (req, res, next) => {
         key: profileImage.key,
         location: profileImage.location
       };
+
+      commentCreator.profileImage = userAccount.profileImage.location;
     }
 
     userAccount.lastTimeActive = new Date();
 
     await userAccount.save();
+
+    // CHECK IF UPDATING COMMENTS IS NEEDED
+    if (
+      commentCreator.username !== userBeforeUpdate.username ||
+      commentCreator.profileImage !== userBeforeUpdate.profileImage.location
+    ) {
+      await Comment.updateMany(
+        {
+          "creator.username": userBeforeUpdate.username
+        },
+        {
+          "creator.username": commentCreator.username,
+          "creator.profileImage": commentCreator.profileImage
+        }
+      );
+    }
 
     res.status(200).json({
       message: "Account successfully updated",
