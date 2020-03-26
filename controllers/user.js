@@ -3,10 +3,10 @@ const bcrypt = require("bcryptjs");
 require("dotenv").config();
 const mongoose = require("mongoose");
 
-const socket = require("../socket");
-
 const User = require("../models/user");
 const Post = require("../models/post");
+const Comment = require("../models/comment");
+const Message = require("../models/message");
 
 const deleteS3Object = require("../services/aws/s3").deleteObject;
 const deleteS3Objects = require("../services/aws/s3").deleteObjects;
@@ -117,32 +117,20 @@ exports.deleteAccount = async (req, res, next) => {
 
     await Post.deleteMany({ _id: { $in: posts } });
 
-    // REMOVE POSTS IMAGES FROM AWS
-    const postsImages = userAccount.posts.map(post => {
-      return {
-        Key: post.image.key
-      };
-    });
-
-    if (postsImages.length)
-      deleteS3Objects(process.env.AWS_BUCKET_NAME, postsImages);
-
-    // REMOVE POST COMMENTS
-    const postsComments = [];
+    // REMOVE COMMENTS OF EACH POST
+    const commentsInPosts = [];
     userAccount.posts.forEach(post => {
-      postsComments.push(...post.comments);
+      commentsInPosts.push(...post.comments);
     });
 
-    // remove comments from comments collection...
+    await Comment.deleteMany({ _id: commentsInPosts });
 
     // REMOVE DELETED POSTS FROM USER LIKED POSTS
-    posts.forEach(async postId => {
-      const postObjectId = new mongoose.Types.ObjectId(postId);
-      await User.updateMany(
-        { likedPosts: postId },
-        { $pull: { likedPosts: postObjectId } }
-      );
-    });
+    const postsObjId = posts.map(postId => new mongoose.Types.ObjectId(postId));
+    await User.updateMany(
+      { likedPosts: { $in: postsObjId } },
+      { $pullAll: { likedPosts: postsObjId } }
+    );
 
     // REMOVE USER FROM FOLLOWING
     const userObjectId = new mongoose.Types.ObjectId(userAccount._id);
@@ -153,8 +141,32 @@ exports.deleteAccount = async (req, res, next) => {
       }
     );
 
+    // REMOVE USER FROM FOLLOWERS
+    await User.updateMany(
+      { followers: userAccount._id },
+      {
+        $pull: { followers: userObjectId }
+      }
+    );
+
     // REMOVE USER ACCOUNT
     await User.deleteOne({ _id: userAccount._id });
+
+    // REMOVE USER MESSAGES
+    await Message.deleteMany({
+      $or: [{ to: userAccount.username }, { from: userAccount.username }]
+    });
+
+    // REMOVE POSTS IMAGES FROM AWS
+    const postsImages = userAccount.posts.map(post => {
+      return {
+        Key: post.image.key
+      };
+    });
+
+    if (postsImages.length)
+      deleteS3Objects(process.env.AWS_BUCKET_NAME, postsImages);
+
     // REMOVE PROFILE IMAGE FROM AWS
     deleteS3Object(process.env.AWS_BUCKET_NAME, userAccount.profileImage.key);
 
@@ -356,7 +368,7 @@ exports.getOnlineUsers = async (req, res, next) => {
     }
 
     const time = Date.now() - 5 * 60 * 1000;
-    
+
     let onlineUsers = await User.find(
       {
         _id: userAccount.following,

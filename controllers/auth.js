@@ -159,7 +159,7 @@ exports.refreshToken = async (req, res, next) => {
     );
 
     if (!user) {
-      const error = new Error("Authentication failed");
+      const error = new Error("Authorization failed");
       error.statusCode = 403;
       throw error;
     }
@@ -167,7 +167,7 @@ exports.refreshToken = async (req, res, next) => {
     const userAccount = await User.findById(user._id, { refreshTokens: 1 });
 
     if (!userAccount) {
-      const error = new Error("Authentication failed");
+      const error = new Error("Authorization failed");
       error.statusCode = 403;
       throw error;
     }
@@ -175,7 +175,7 @@ exports.refreshToken = async (req, res, next) => {
     if (
       !userAccount.refreshTokens.some(obj => obj.refreshToken === refreshToken)
     ) {
-      const error = new Error("Authentication failed");
+      const error = new Error("Authorization failed");
       error.statusCode = 403;
       throw error;
     }
