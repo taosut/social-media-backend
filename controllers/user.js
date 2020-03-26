@@ -149,6 +149,14 @@ exports.deleteAccount = async (req, res, next) => {
       }
     );
 
+    // REMOVE USER NOTIFICATIONS FROM USERS
+    await User.updateMany(
+      { "notifications.from": userAccount.username },
+      {
+        $pull: { notifications: { from: userAccount.username } }
+      }
+    );
+
     // REMOVE USER ACCOUNT
     await User.deleteOne({ _id: userAccount._id });
 
