@@ -28,6 +28,17 @@ const handleStoreError = function(err) {
   };
 };
 
+const globalBruteforce = new ExpressBrute(store, {
+  freeRetries: 1000,
+  minWait: 25 * 60 * 60 * 1000,
+  maxWait: 25 * 60 * 60 * 1000,
+  attachResetToRequest: false,
+  refreshTimeoutOnRequest: false,
+  lifetime: 24 * 60 * 60,
+  failCallback: failCallback,
+  handleStoreError: handleStoreError
+});
+
 const signInBruteforce = new ExpressBrute(store, {
   freeRetries: 15,
   minWait: 5 * 60 * 1000,
@@ -49,5 +60,6 @@ const signUpBruteforce = new ExpressBrute(store, {
 
 module.exports = {
   signUpBruteforce,
-  signInBruteforce
+  signInBruteforce,
+  globalBruteforce
 };

@@ -13,7 +13,7 @@ const commentRoutes = require("./routes/comment");
 const messageRoutes = require("./routes/message");
 
 const chatController = require("./controllers/chat");
-// const bruteforceController = require("./controllers/rate-limit");
+const globalBruteforce = require("./controllers/rate-limit").globalBruteforce;
 
 const app = express();
 // Enable proxy
@@ -39,6 +39,9 @@ mongoose.connect(process.env.MONGODB_URI, {
   useCreateIndex: true,
   useUnifiedTopology: true
 });
+
+// GLOBAL RATE-LIMIT
+app.use(globalBruteforce.prevent);
 
 // ROUTES
 app.use("/auth", authRoutes);
