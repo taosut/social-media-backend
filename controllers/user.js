@@ -86,6 +86,8 @@ exports.deleteAccount = async (req, res, next) => {
 
   const errors = validationResult(req);
 
+  let session = null;
+
   try {
     if (!errors.isEmpty()) {
       const error = new Error("Validation failed");
@@ -114,6 +116,10 @@ exports.deleteAccount = async (req, res, next) => {
 
     // REMOVE ALL POSTS
     const posts = userAccount.posts.map(post => post._id);
+
+    // START TRANSACTION
+    session = await mongoose.startSession();
+    session.startTransaction();
 
     await Post.deleteMany({ _id: { $in: posts } });
 
@@ -172,6 +178,9 @@ exports.deleteAccount = async (req, res, next) => {
       };
     });
 
+    // FINISH TRANSACTION
+    session.commitTransaction();
+
     if (postsImages.length)
       deleteS3Objects(process.env.AWS_BUCKET_NAME, postsImages);
 
@@ -182,6 +191,7 @@ exports.deleteAccount = async (req, res, next) => {
       message: "Account successfully deleted with all its data"
     });
   } catch (err) {
+    session.abortTransaction();
     if (!err.statusCode) err.statusCode = 500;
     next(err);
   }
@@ -196,6 +206,8 @@ exports.updateAccount = async (req, res, next) => {
 
   const errors = validationResult(req);
 
+  let session = null;
+
   try {
     if (!errors.isEmpty()) {
       const error = new Error("Validation failed");
@@ -203,7 +215,11 @@ exports.updateAccount = async (req, res, next) => {
       throw error;
     }
 
-    const userAccount = await User.findById(req.userId);
+    // START SESSION
+    session = await mongoose.startSession();
+    session.startTransaction();
+
+    const userAccount = await User.findById(req.userId).session(session);
 
     if (!userAccount) {
       const error = new Error("An error occured");
@@ -293,11 +309,14 @@ exports.updateAccount = async (req, res, next) => {
       );
     }
 
+    session.commitTransaction();
+
     res.status(200).json({
       message: "Account successfully updated",
       user: userAccount
     });
   } catch (err) {
+    session.abortTransaction();
     if (!err.statusCode) err.statusCode = 500;
 
     if (profileImage)

@@ -66,7 +66,7 @@ const deleteObject = function(bucketName, objectKey) {
   };
 
   s3.deleteObject(params, function(error, data) {
-    if (error) console.log(error, error.stack);
+    if (error) console.error(error);
   });
 };
 
@@ -80,7 +80,7 @@ const deleteObjects = function(bucketName, objects) {
   };
 
   s3.deleteObjects(params, function(error, data) {
-    if (error) console.log(error, error.stack);
+    if (error) console.error(error);
   });
 };
 
