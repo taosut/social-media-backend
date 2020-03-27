@@ -12,13 +12,11 @@ const model = mongoose.model(
 const store = new MongooseStore(model);
 
 const failCallback = function(req, res, next, nextValidRequestDate) {
-  res
-    .status(429)
-    .json({
-      message: `You've made too many attempts in short period of time, please try again ${moment(
-        nextValidRequestDate
-      ).fromNow()}`
-    });
+  res.status(429).json({
+    message: `You've made too many attempts in short period of time, please try again ${moment(
+      nextValidRequestDate
+    ).fromNow()}`
+  });
 };
 
 const handleStoreError = function(err) {
@@ -30,10 +28,10 @@ const handleStoreError = function(err) {
   };
 };
 
-const globalBruteforce = new ExpressBrute(store, {
-  freeRetries: 1000,
-  minWait: 500,
-  maxWait: 15 * 60 * 1000,
+const signInBruteforce = new ExpressBrute(store, {
+  freeRetries: 15,
+  minWait: 5 * 60 * 1000,
+  maxWait: 60 * 60 * 1000,
   failCallback: failCallback,
   handleStoreError: handleStoreError
 });
@@ -50,5 +48,6 @@ const signUpBruteforce = new ExpressBrute(store, {
 });
 
 module.exports = {
-  signUpBruteforce
+  signUpBruteforce,
+  signInBruteforce
 };

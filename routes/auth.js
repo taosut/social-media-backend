@@ -5,6 +5,7 @@ const User = require("../models/user");
 
 const authController = require("../controllers/auth");
 const signUpBruteforce = require("../controllers/rate-limit").signUpBruteforce;
+const signInBruteforce = require("../controllers/rate-limit").signInBruteforce;
 
 const s3Upload = require("../services/aws/s3").uploadImage;
 
@@ -60,7 +61,15 @@ router.post(
 );
 
 // POST => /auth/sign-in
-router.post("/sign-in", authController.signIn);
+router.post(
+  "/sign-in",
+  signInBruteforce.getMiddleware({
+    key: function(req, res, next) {
+      next(req.body.email);
+    }
+  }),
+  authController.signIn
+);
 
 // POST => /auth/refresh-token
 router.post("/refresh-token", authController.refreshToken);

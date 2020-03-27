@@ -204,11 +204,12 @@ exports.refreshToken = async (req, res, next) => {
     user.lastTimeActive = new Date();
 
     await userAccount.save();
-
-    res.status(200).json({
-      message: "Token successfully refreshed",
-      accessToken: token,
-      refreshToken
+    req.brute.reset(function() {
+      res.status(200).json({
+        message: "Token successfully refreshed",
+        accessToken: token,
+        refreshToken
+      });
     });
   } catch (err) {
     if (!err.statusCode) err.statusCode = 500;
