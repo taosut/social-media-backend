@@ -111,6 +111,8 @@ exports.deletePost = async (req, res, next) => {
   const postId = req.body.postId;
   const postObjectId = new mongoose.Types.ObjectId(postId);
 
+  let session = null;
+
   const errors = validationResult(req);
 
   try {
@@ -120,7 +122,10 @@ exports.deletePost = async (req, res, next) => {
       throw error;
     }
 
-    const deletePost = await Post.findById(postId);
+    session = await mongoose.startSession();
+    session.startTransaction();
+
+    const deletePost = await Post.findById(postId).session(session);
 
     if (!deletePost) return res.status(404).json({ message: "Post not found" });
 
@@ -139,9 +144,6 @@ exports.deletePost = async (req, res, next) => {
       }
     );
 
-    // DELETE POST IMAGE
-    deleteS3Object(process.env.AWS_BUCKET_NAME, deletePost.image.key);
-
     // DELETE POST COMMENTS
     await Comment.deleteMany({ _id: deletePost.comments });
 
@@ -151,12 +153,18 @@ exports.deletePost = async (req, res, next) => {
       { $pull: { likedPosts: postObjectId } }
     );
 
+    // DELETE POST IMAGE
+    deleteS3Object(process.env.AWS_BUCKET_NAME, deletePost.image.key);
+
+    session.commitTransaction();
+
     socket.getIO().emit("remove post", postId);
 
     return res.status(200).json({
       message: "Post successfully deleted"
     });
   } catch (err) {
+    session.abortTransaction();
     if (!err.statusCode) err.statusCode = 500;
     next(err);
   }
