@@ -1,6 +1,5 @@
 const express = require("express");
 const { body, param, query } = require("express-validator");
-const slowDown = require("express-slow-down");
 
 const Post = require("../models/post");
 
@@ -11,12 +10,6 @@ const s3Upload = require("../services/aws/s3").uploadImage;
 const isAuth = require("../middleware/is-auth");
 
 const router = express.Router();
-
-const getPostsSpeedLimiter = slowDown({
-  windowMs: 1 * 60 * 1000, // 1 minutes
-  delayAfter: 10, // allow 5 requests to go at full-speed, then...
-  delayMs: 100 // 6th request has a 100ms delay, 7th has a 200ms delay, 8th gets 300ms, etc.
-});
 
 // POST => /posts/create-post
 router.post(
@@ -82,7 +75,6 @@ router.delete(
 // GET => /posts
 router.get(
   "/",
-  getPostsSpeedLimiter,
   isAuth,
   [
     query("skip").custom(value => {

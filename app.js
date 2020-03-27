@@ -13,10 +13,12 @@ const commentRoutes = require("./routes/comment");
 const messageRoutes = require("./routes/message");
 
 const chatController = require("./controllers/chat");
+// const bruteforceController = require("./controllers/rate-limit");
 
 const app = express();
-
+// Enable proxy
 app.enable("trust proxy");
+app.set("trust proxy", 1);
 
 app.use(bodyParser.json());
 

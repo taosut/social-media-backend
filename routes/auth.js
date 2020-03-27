@@ -4,6 +4,7 @@ const { body } = require("express-validator");
 const User = require("../models/user");
 
 const authController = require("../controllers/auth");
+const signUpBruteforce = require("../controllers/rate-limit").signUpBruteforce;
 
 const s3Upload = require("../services/aws/s3").uploadImage;
 
@@ -14,6 +15,7 @@ const router = express.Router();
 // POST => /auth/sign-up
 router.post(
   "/sign-up",
+  signUpBruteforce.prevent,
   s3Upload.single("profileImage"),
   [
     body("username")
