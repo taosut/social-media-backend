@@ -106,10 +106,12 @@ exports.signIn = async (req, res, next) => {
       profileImage: loggedUser.profileImage
     });
 
-    res.status(200).json({
-      message: "User successfully logged in",
-      accessToken: token,
-      refreshToken: refreshToken
+    req.brute.reset(function() {
+      res.status(200).json({
+        message: "User successfully logged in",
+        accessToken: token,
+        refreshToken: refreshToken
+      });
     });
   } catch (err) {
     if (!err.statusCode) err.statusCode = 500;
@@ -204,12 +206,11 @@ exports.refreshToken = async (req, res, next) => {
     user.lastTimeActive = new Date();
 
     await userAccount.save();
-    req.brute.reset(function() {
-      res.status(200).json({
-        message: "Token successfully refreshed",
-        accessToken: token,
-        refreshToken
-      });
+
+    res.status(200).json({
+      message: "Token successfully refreshed",
+      accessToken: token,
+      refreshToken
     });
   } catch (err) {
     if (!err.statusCode) err.statusCode = 500;
