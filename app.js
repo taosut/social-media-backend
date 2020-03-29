@@ -23,8 +23,9 @@ app.set("trust proxy", 1);
 app.use(bodyParser.json());
 
 // CORS(Cross-Origin-Resource-Sharing)
+const origin = process.env.CLIENT_URL || "http://localhost:3000";
 const corsOptions = {
-  origin:  process.env.CLIENT_URL || "http://localhost:3000",
+  origin: origin,
   optionsSuccessStatus: 200
 };
 
