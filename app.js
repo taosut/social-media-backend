@@ -24,7 +24,7 @@ app.use(bodyParser.json());
 
 // CORS(Cross-Origin-Resource-Sharing)
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin:  process.env.CLIENT_URL || "http://localhost:3000",
   optionsSuccessStatus: 200
 };
 
