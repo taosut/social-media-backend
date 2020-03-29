@@ -6,13 +6,11 @@ const userSchema = new Schema(
   {
     username: {
       type: String,
-      required: true,
-      index: true
+      required: true
     },
     email: {
       type: String,
-      required: true,
-      index: true
+      required: true
     },
     password: {
       type: String,
@@ -125,5 +123,7 @@ userSchema.methods.addNotification = function(newNotification) {
 
   return this.save();
 };
+
+userSchema.index({ username: 1 }, { unique: true });
 
 module.exports = mongoose.model("User", userSchema);

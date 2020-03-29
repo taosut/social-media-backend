@@ -7,13 +7,7 @@ module.exports = function(io) {
   io.on("connection", socket => {
     users[socket.handshake.query.username] = socket;
 
-    socket.on("disconnect", () => {
-      for (username in users) {
-        if (users[username] === socket.id) {
-          console.log("true, remove this socket");
-        }
-      }
-    });
+    socket.on("disconnect", () => {});
   });
 
   const chatNsp = io.of("/chat");
