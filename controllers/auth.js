@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
@@ -254,7 +256,7 @@ exports.logout = async (req, res, next) => {
   }
 };
 
-function createJWT(user, secret, expiresIn = 1800) {
+function createJWT(user, secret, expiresIn = "30m") {
   return jwt.sign(
     {
       _id: user._id,
