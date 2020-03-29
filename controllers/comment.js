@@ -1,4 +1,5 @@
 const { validationResult } = require("express-validator");
+const mongoose = require("mongoose");
 
 const Comment = require("../models/comment");
 const User = require("../models/user");
@@ -8,6 +9,8 @@ exports.createComment = async (req, res, next) => {
   const postId = req.body.postId;
   const text = req.body.text;
 
+  let session = null;
+
   const errors = validationResult(req);
 
   try {
@@ -17,7 +20,13 @@ exports.createComment = async (req, res, next) => {
       throw error;
     }
 
-    const creator = await User.findById(req.userId, "username profileImage");
+    session = await mongoose.startSession();
+    session.startTransaction();
+
+    const creator = await User.findById(
+      req.userId,
+      "username profileImage"
+    ).session(session);
 
     const newComment = new Comment({
       postId: postId,
@@ -27,7 +36,7 @@ exports.createComment = async (req, res, next) => {
         username: creator.username,
         profileImage: creator.profileImage.location
       }
-    });
+    })
     creator.lastTimeActive = new Date();
 
     await newComment.save();
@@ -37,11 +46,14 @@ exports.createComment = async (req, res, next) => {
       { $push: { comments: newComment._id } }
     );
 
+    session.commitTransaction();
+
     res.status(200).json({
       message: "Post successfully createrd",
       comment: newComment
     });
   } catch (err) {
+    session.abortTransaction();
     if (!err.statusCode) err.statusCode = 500;
     next(err);
   }
@@ -49,6 +61,8 @@ exports.createComment = async (req, res, next) => {
 
 exports.deleteComment = async (req, res, next) => {
   const commentId = req.body.commentId;
+
+  let session = null;
 
   const errors = validationResult(req);
 
@@ -58,6 +72,9 @@ exports.deleteComment = async (req, res, next) => {
       error.statusCode = 406;
       throw error;
     }
+
+    session = await mongoose.startSession();
+    session.startTransaction();
 
     const comment = await Comment.findById(commentId);
     const post = await Post.findById(comment.postId, "creator");
@@ -78,10 +95,13 @@ exports.deleteComment = async (req, res, next) => {
       { $pull: { comments: comment._id } }
     );
 
+    session.commitTransaction();
+
     return res.status(200).json({
       message: "Comment successfully deleted"
     });
   } catch (err) {
+    session.abortTransaction();
     if (!err.statusCode) err.statusCode = 500;
     next(err);
   }
